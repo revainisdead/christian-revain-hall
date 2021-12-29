@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+# Code that will stop script on a non-zero (non-successful) exit code. (aka. executing in an exception-like style)
+
+# $0: First argument to the script. If ran as "./docker-scripts/install", then that is the first argument.
+# dirname $0: This transforms a path such as "./docker-scripts/install" into "install" (or "install" into ".")
+#
+SCRIPT_BASE=$(dirname "$0")
+echo Script Base: $SCRIPT_BASE
+
+source $SCRIPT_BASE/utils
+
+TEST=$(resolve_path "$SCRIPT_BASE/..")
+echo testing relative paths to absolute: $TEST
