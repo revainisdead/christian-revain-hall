@@ -13,3 +13,50 @@ source $SCRIPT_BASE/utils
 
 TEST=$(resolve_path "$SCRIPT_BASE/..")
 echo testing relative paths to absolute: $TEST
+
+POSITIONAL=()
+
+skip_install=
+skip_db=
+
+# Detailed: While the number of arguments ($#) is greater than (-gt) 0
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        --skip-install)
+            skip_install=1
+            ;;
+        --skip-db)
+            skip_db=1
+            ;;
+        -h|--help|?)
+            echo "Install Docker and build service containers."
+            echo
+            cecho "Usage: $(basename $0) <options> [SERVICE...]" normal
+            echo
+            echo "Options:"
+            echo "      --skip-install  Skip Docker install, just build"
+            echo "      --skip-db       Skip database restore script"
+            echo "  -h  --help          This help message"
+            exit 0
+            ;;
+        *)
+            POSITIONAL+=("$1")
+            ;;
+    esac
+    shift
+    # Shift details (from `man bash`)
+    # ---
+    # Description:
+    # - The positional parameters from n+1 ... are renamed to $1 ....
+    #
+    # Guidelines:
+    # - n must be a non-negative number less than or equal to $#.
+    # - If n is 0, no parameters are changed.
+    # - If n is not given, it is assumed to be 1.
+    # - If n is greater than $#, the positional parameters are  not  changed.
+    # - The return status is greater than zero if n is greater than $# or less than zero; otherwise 0.
+done
+
+echo TEST skip install!!! $skip_install
+echo TEST skip db!!! $skip_db

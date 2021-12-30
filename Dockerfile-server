@@ -1,16 +1,22 @@
-FROM node:8.8.1 as static
+#FROM node:8.8.1 as static
+#
+#RUN yarn global add npm@5.5.1
+#RUN npm install -g lerna@2.5.1
+#WORKDIR /srv/app
+#RUN chown node.node /srv/app
+#COPY --chown=node:node shared shared
+#COPY --chown=node:node client client
+#COPY --chown=node:node server/locale server/locale
+#WORKDIR shared
+#USER node
+#RUN npm run lerna -- bootstrap
 
-RUN yarn global add npm@5.5.1
-RUN npm install -g lerna@2.5.1
-WORKDIR /srv/app
-RUN chown node.node /srv/app
-COPY --chown=node:node shared shared
-COPY --chown=node:node client client
-COPY --chown=node:node server/locale server/locale
-WORKDIR shared
-USER node
-RUN npm run lerna -- bootstrap
-
+# Using docker multi-stage, layered builds, you can pull from multiple public images
+#
+# Docker docs: https://docs.docker.com/develop/develop-images/multistage-build/
+# SO: https://stackoverflow.com/questions/39626579/is-there-a-way-to-combine-docker-images-into-1-container
+#
+# Official Python Image: https://hub.docker.com/layers/python/library/python/3.6-stretch/images/sha256-d6c4d3276e3c776590663faa5e6693d894b4747e7aa3776da38722e312e2ea37?context=explore
 FROM python:3.6-stretch
 
 RUN adduser --uid 1000 --gecos --quiet --disabled-password sk
@@ -21,6 +27,8 @@ ENV DJANGO_SETTINGS_MODULE=sk.settings.docker_local \
     EDITOR=vim
 
 RUN apt-get update && apt-get -y install \
+    # CA Cert Tools
+    software-properties-common \
     build-essential \
     vim \
     git \

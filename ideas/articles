@@ -1,0 +1,11 @@
+1)
+git - upstream === origin
+- origin: the ORIGIN / the server itself
+- upstream: a branch on origin (can't call it origin, or it'd be confused with origin itself)
+
+"upstream branch" === "origin branch"...
+2)
+- throw an exception on purpose
+- get stack trade
+- trace code that ran better, faster, all of the above
+3)
