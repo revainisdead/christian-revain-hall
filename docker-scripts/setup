@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Always run from project root.
+# `docker-scripts/setup`
+
 set -e
 # Code that will stop script on a non-zero (non-successful) exit code. (aka. executing in an exception-like style)
 
@@ -9,6 +12,7 @@ set -e
 SCRIPT_BASE=$(dirname "$0")
 echo Script Base: $SCRIPT_BASE
 
+# This import requires the script be ran at project root.
 source $SCRIPT_BASE/utils
 
 TEST=$(resolve_path "$SCRIPT_BASE/..")
@@ -30,7 +34,7 @@ while [[ $# -gt 0 ]]; do
             skip_db=1
             ;;
         -h|--help|?)
-            echo "Install Docker and build service containers."
+            echo "Install Docker and build images."
             echo
             cecho "Usage: $(basename $0) <options> [SERVICE...]" normal
             echo
@@ -44,7 +48,9 @@ while [[ $# -gt 0 ]]; do
             POSITIONAL+=("$1")
             ;;
     esac
-    shift
+    shift 1
+    # (Summary) Shift positional arguments by one, getting rid of the firstmost argument
+    #
     # Shift details (from `man bash`)
     # ---
     # Description:

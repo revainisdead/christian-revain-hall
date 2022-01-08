@@ -1,0 +1,26 @@
+FROM node:8.8.1
+
+USER root
+RUN yarn global add npm@5.5.1
+RUN npm install -g lerna@2.5.1
+RUN npm install -g http-server@0.11.1
+RUN apt-get update && apt-get -y install vim
+
+# Change the timezone from UTC to same as SK
+RUN cp /usr/share/zoneinfo/America/Chicago /etc/localtime
+RUN dpkg-reconfigure --frontend noninteractive tzdata
+
+WORKDIR /srv/app
+RUN chown node.node /srv/app
+COPY --chown=node:node shared shared
+COPY --chown=node:node client client
+COPY --chown=node:node server/locale server/locale
+
+USER node
+WORKDIR /srv/app/shared
+RUN npm run lerna -- bootstrap
+RUN lerna run --scope "summit-*" build-jasmine-debug
+
+WORKDIR /srv/app/
+
+# vim:set ft=dockerfile:

@@ -1,0 +1,5 @@
+# This Dockerfile's intent is to do nothing. In fact, it won't build an image.
+# Or will it build a zero byte image? It is empty, it will run /bin/true, doing nothing.
+
+FROM tianon/true
+ENTRYPOINT ["/true"]
