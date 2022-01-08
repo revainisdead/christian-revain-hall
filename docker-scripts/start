@@ -1,0 +1,57 @@
+#!/bin/bash
+
+set -e
+SCRIPT_BASE=$(dirname "$0")
+cd $SCRIPT_BASE/..
+
+source $SCRIPT_BASE/utils
+
+detach=
+
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        -h|--help|?)
+            echo "Rebuild, create, run and attach all or specfic Docker services."
+            echo
+            cecho "Usage: $(basename $0) <options> [SERVICE...]" default bold
+            echo
+            echo "Options:"
+            echo "  -d                  Detached mode: Run containers in background."
+            echo "  -h  --help          This help message"
+            echo
+            echo "Run 'docker-compose up --help' to see more options"
+            exit 0
+            ;;
+        -d|--detach)
+            detach=1
+            ;;
+        *)
+            POSITIONAL+=("$key")
+            ;;
+    esac
+    shift
+done
+set -- "${POSITIONAL[@]}"
+
+
+if [ ! "$(docker network ls | grep crh-net)" ]; then
+    cecho "Shared network not found, creating..." yellow bold
+    docker network create --driver=bridge --subnet=172.32.0.0/24 crh-net
+fi
+
+args=$@
+
+teardown() {
+    $SCRIPT_BASE/stop $args
+}
+trap "teardown" INT
+
+#docker-compose up -d $args
+
+if [ "$detach" ]; then
+    cecho "Starting in detached mode. Use '$SCRIPT_BASE/attach <service>' to view output." blue bold
+else
+    docker-compose logs -f $args || teardown
+fi

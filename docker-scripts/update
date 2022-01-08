@@ -1,0 +1,79 @@
+#!/bin/bash
+
+# To just skip prompt and go straight through with cleanup:
+# ./docker-scripts/update --no-input
+# To not have any input prompt and to also skip cleanup, run with both.
+# ./docker-scripts/update --no-input --skip-cleanup
+# Lastly, if you pass just skip cleanup, it will prompt you, but still skip it.
+# ./docker-scripts/update --skip-cleanup
+
+set -e
+SCRIPT_BASE=$(dirname "$0")
+cd $SCRIPT_BASE/..
+
+source $SCRIPT_BASE/utils
+
+no_input=
+skip_cleanup=
+
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        -y|--no-input)
+            no_input=1
+            ;;
+        --skip-cleanup)
+            skip_cleanup=1
+        -h|--help|?)
+            echo "Update environment and packages, by running cleanup and then building. Also migrates."
+            echo
+            cecho "Usage: $(basename $0) <options> <SERVICE>]" default bold
+            echo
+            echo "Services:"
+            echo "$(docker-compose config --services)"
+            echo
+            echo "Options:"
+            echo "  -y  --no-input      Assume yes for all user input"
+            echo "      --skip-cleanup  Don't run the cleanup script at all"
+            echo "  -h  --help          This help message"
+            exit 0
+            ;;
+        *)
+            POSITIONAL+=("$1")
+            ;;
+    esac
+    shift
+done
+set -- "${POSITIONAL[@]}"
+
+if [ ! "$no_input" ]; then
+    cecho "This will delete many files and volumes and may be destructive to work in progress." yellow bold
+    read -n1 -r -p "Press 'Y' to continue or any other key to cancel..." key
+    echo
+    if [ ! "$key" ] || [[ "yY" != *"$key"* ]]; then
+        echo
+        cecho "Aborting." red
+        exit 0
+    fi
+else
+    cecho "Skipping user input prompt." green
+    cecho "'--no-input' argument provided."
+fi
+
+if [ ! "$skip_cleanup" ]; then
+    $script_base/cleanup --no-input
+else
+    cecho "Skipping cleanup ('cleanup' script)." green
+    cecho "'--skip-cleanup' argument provided." green
+fi
+
+echo
+cecho "Rebuilding environment..." default bold
+docker-compose build
+
+echo
+cecho "Running database migrations..." default bold
+$script_base/start -d web db
+$script_base/migrate
+$script_base/stop

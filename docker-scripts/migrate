@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+SCRIPT_BASE=$(dirname "$0")
+cd $SCRIPT_BASE/..
+
+source $SCRIPT_BASE/utils
+
+
+cecho "Set up Django first, then finish migrate script. Coming soon."
