@@ -1,0 +1,4 @@
+# dev-requirements.in
+-c requirements.txt
+django-debug-toolbar==3.2.4
+flake8==4.0.0

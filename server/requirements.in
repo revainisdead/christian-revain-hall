@@ -1,0 +1,5 @@
+django==4.0.0
+djangorestframework=3.9.4
+django-environ=0.8.1
+pytest-django=4.5.2
+model-bakery=1.4.0
