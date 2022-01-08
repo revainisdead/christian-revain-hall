@@ -161,6 +161,10 @@ cecho() {
         colorArg="normal"
     fi
 
+    # Note
+    # access -all- keys in associate array:   ${!array[@]}
+    # access -all- values in associate array: ${array[@]}
+
     # Retrieve from associative array
     colorFromMapping="${colors[$colorArg]}"
     echo -e "${colorFromMapping}${text}"
@@ -170,4 +174,16 @@ cecho() {
 resolve_path() {
     cd "$1" 2> /dev/null || return $?
     echo `pwd -P`
+}
+
+detect_platform() {
+    if [ "$(which apt-get)" ]; then
+        echo "Debian"
+    elif [[ "$(uname -s)" = "Darwin" ]]; then
+        if [ "$(which brew)" ]; then
+            echo "OSX_BREW"
+        else
+            echo "OSX"
+        fi
+    fi
 }

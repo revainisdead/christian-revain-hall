@@ -16,8 +16,8 @@ echo Script Base: $SCRIPT_BASE
 source $SCRIPT_BASE/utils
 
 # Successfully goes up one directory to project root with util function
-TEST=$(resolve_path "$SCRIPT_BASE/..")
-echo testing relative paths to absolute: $TEST
+ROOT=$(resolve_path "$SCRIPT_BASE/..")
+echo testing relative paths to absolute: $ROOT
 
 POSITIONAL=()
 
@@ -64,22 +64,32 @@ while [[ $# -gt 0 ]]; do
     # - If n is greater than $#, the positional parameters are  not  changed.
     # - The return status is greater than zero if n is greater than $# or less than zero; otherwise 0.
 done
+# dash dash here means no longer consider the next values as "options" (to the command)
+# ie. if a positional argument is -z, then it will be passed directly to set.
 set -- "${POSITIONAL[@]}"
 
-echo Set test ${POSITIONAL[@]}
+echo ARG0 test $0
+echo ARG1 test $1
+echo ARG2 test $2
+echo ARG3 test $3
+# access values in array: ${array[@]}
+echo Set test "${POSITIONAL[@]}"
 
 if [ ! "$skip_install" ]; then
     case $(detect_platform) in
-        *)
+        Debian)
             cecho "Installing Docker..." blue
-            $script_base/setup_docker --use-existing
+            $SCRIPT_BASE/setup_docker --use-existing
             ;;
     esac
+else
+    cecho "Skipping installation of docker ('setup_docker' script)." green bold
+    cecho "'--skip-install' argument provided." green bold
 fi
 
 echo
 cecho "Building images..." blue
-docker-compose build
+#docker-compose build
 
 echo
 if [ ! "$skip_db" ]; then

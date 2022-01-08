@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -e
+
+SCRIPT_BASE=$(dirname "$0")
+echo Script Base: $SCRIPT_BASE
+
+source $SCRIPT_BASE/utils
+
+# Test running scripts from project root level
+ROOT=$(resolve_path "$SCRIPT_BASE/..")
+cd $ROOT
+
+tests=(
+    ["positional params"]="./script-docker/setup test1 --skip-db test2 --skip-install test3"
+    ["basic"]="./script-docker/setup --skip-db --skip-install"
+)
