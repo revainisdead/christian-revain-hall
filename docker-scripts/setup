@@ -15,6 +15,7 @@ echo Script Base: $SCRIPT_BASE
 # This import requires the script be ran at project root.
 source $SCRIPT_BASE/utils
 
+# Successfully goes up one directory to project root with util function
 TEST=$(resolve_path "$SCRIPT_BASE/..")
 echo testing relative paths to absolute: $TEST
 
@@ -63,6 +64,28 @@ while [[ $# -gt 0 ]]; do
     # - If n is greater than $#, the positional parameters are  not  changed.
     # - The return status is greater than zero if n is greater than $# or less than zero; otherwise 0.
 done
+set -- "${POSITIONAL[@]}"
 
-echo TEST skip install!!! $skip_install
-echo TEST skip db!!! $skip_db
+echo Set test ${POSITIONAL[@]}
+
+if [ ! "$skip_install" ]; then
+    case $(detect_platform) in
+        *)
+            cecho "Installing Docker..." blue
+            $script_base/setup_docker --use-existing
+            ;;
+    esac
+fi
+
+echo
+cecho "Building images..." blue
+docker-compose build
+
+echo
+if [ ! "$skip_db" ]; then
+    cecho "Populating database..." blue
+    $script_base/restore_db -y
+else
+    cecho "Skipping repopulation of database ('restore_db' script)." green bold
+    cecho "'--skip-db' argument provided." green bold
+fi

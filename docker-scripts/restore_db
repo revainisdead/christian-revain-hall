@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+
+SCRIPT_BASE=$(dirname "$0")
+echo Script Base: $SCRIPT_BASE
+
+source $SCRIPT_BASE/utils
+
+cecho "Note: Restoring database from a local dump will come soon." red
