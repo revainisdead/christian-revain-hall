@@ -38,7 +38,7 @@ set -- "${POSITIONAL[@]}"
 
 if [ ! "$(docker network ls | grep crh-net)" ]; then
     cecho "Shared network not found, creating..." yellow bold
-    docker network create --driver=bridge --subnet=172.32.0.0/24 crh-net
+    docker network create --driver=bridge --subnet=172.32.0.0/16 crh-net
 fi
 
 args=$@
@@ -48,7 +48,7 @@ teardown() {
 }
 trap "teardown" INT
 
-#docker-compose up -d $args
+docker-compose up -d $args
 
 if [ "$detach" ]; then
     cecho "Starting in detached mode. Use '$SCRIPT_BASE/attach <service>' to view output." blue bold

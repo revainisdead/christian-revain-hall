@@ -89,7 +89,7 @@ fi
 
 echo
 cecho "Building images..." blue
-#docker-compose build
+docker-compose build
 
 echo
 if [ ! "$skip_db" ]; then

@@ -42,7 +42,7 @@ SECRET_KEY = get_secret_key()
 debug_env_var = os.environ.get("DEBUG", False)
 if debug_env_var == "true":
     DEBUG = True
-else
+else:
     DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
@@ -98,12 +98,12 @@ WSGI_APPLICATION = "crh.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresl_psycopg2",
+        "ENGINE": "django.db.backends.postgresql",
         "NAME": "crhall",
         "USER": "crhall",
         "PASSWORD": "crhall",
         "HOST": "localhost",
-        "PORT": "5432",
+        "PORT": "5433",
     }
 }
 

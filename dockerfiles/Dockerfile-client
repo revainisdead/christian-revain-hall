@@ -7,11 +7,9 @@ USER root
 
 USER node
 WORKDIR /srv/app
-RUN chown node.node /srv/app
+#RUN chown node.node /srv/app
 COPY --chown=node:node client client
 
-WORKDIR shared
-USER node
-RUN npm run lerna -- bootstrap
+#RUN npm run build
 
 # vim:set ft=dockerfile:
