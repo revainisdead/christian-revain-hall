@@ -1,1 +1,37 @@
 https://model-bakery.readthedocs.io/en/latest/test_runners.html
+
+- No virutal env, install straight to docker os
+
+
+Tokens
+- Step 1 always: authenticate via username/email/PII and password
+- Get token from drf endpoint
+- When retrieved the token on login -> SAVE TO LOCAL STORAGE.
+- Then, use a reusable javascript function: 1) pull token out of local storage 2) include in header
+3) The backend validates the logged in user via middleware (takes token from header, validates)
+- This should happen for every access-controlled url (requiring authentication / authorization)
+- Each request to 'locked' url:
+    1) On fetch, add reusable function to add auth headers, `authHeaders()`.
+    2) Backend middleware intercept: get token from header, check against db (can drf do this authomatically?)
+
+WHEN IS IT PASSWORDLESS?
+
+- Only when authenticating via ANOTHER PLATFORM (google, github, etc) YOU STILL USE A PASSWORD!!!
+- Then, after you authenticate with them, you get a token
+- Then, the other platform, say GitHub, using their oauth server, will give you an option to "authorize" the new app via a Yes / No (aka a button.)
+- Since you are logged in with Github, this is a valid action and their oauth server will reply to the new platform and let you log in
+
+drf defaults:
+UNAUTNENTICATED_USER = django.contrib.auth.models.AnonymousUser     # request.user
+UNAUTNENTICATED_TOKEN = None                                        # request.auth
+
+preferred?
+UNAUTNENTICATED_USER = None                                         # request.user
+UNAUTNENTICATED_TOKEN = None                                        # request.auth
+
+Because all the python packages are in Docker, not in a virtual environment locally:
+- We need `sudo apt-get install python3-django`
+- To use `django-admin`
+`django-admin startproject app .`
+`django-admin startapp restful_api`
+

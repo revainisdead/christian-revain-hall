@@ -4,48 +4,55 @@ services:
     server:
         build:
             context: .
-            dockerfile: dockerfiles/Dockerfile-web
-        working_dir: /srv/app/server
+            dockervile: dockerfiles/Dockerfile-server
         env_file: .dockerenv
+        working_dir: /srv/app/server
+        user: ${UID:-1000}
+        environment:
+            DEBUG: 'true'
         command: ./manage.py runserver 0.0.0.0:8000
         ports:
             - "8000:8000"
+        volumes:
+            - ".:/srv/app:delegated"
+            - "static-volume:/srv/app/static:z"
+            - "python-packages:/usr/local/lib/python3.10/site-packages:z"
         networks:
             app_net:
                 ipv4_address: 172.32.1.1
                 aliases:
                     - crh-server-net
-    celery:
-        build:
-            context: .
-            dockerfile: dockerfiles/Dockerfile-web
-        working_dir: /srv/app/server
-        env_file: .dockerenv
-        command: python3 celery.py
-        networks:
-            app_net:
-                ipv4_address: 172.32.1.2
-                aliases:
-                    - crh-celery-net
     client:
         build:
             context: .
             dockerfile: dockerfiles/Dockerfile-client
-        working_dir: /srv/app/client
         env_file: .dockerenv
+        working_dir: /srv/app/client
+        volumes:
+            - "./client:/srv/app/client:delegated"
+            - "static-volume:/srv/app/static:z"
         networks:
             app_net:
-                ipv4_address: 172.32.1.3
+                ipv4_address: 172.32.1.2
                 aliases:
                     - crh-client-net
     db:
         build:
             context: .
             dockerfile: dockerfiles/Dockerfile-db
-        env_file: .dockerenv
+        environment:
+            POSTGRES_USER: crhall
+            POSTGRES_PASSWORD: crhall
+            POSTGRES_DB: crhall
+            PG_DATA: /var/lib/postgresql/data/pgdata
+        ports:
+            - "5432:5432"
+        volumes:
+            - "db-volume:/var/lib/postgresql/data/pgdata"
+
         networks:
             app_net:
-                ipv4_address: 172.32.1.4
+                ipv4_address: 172.32.1.3
                 aliases:
                     - crh-db-net
 

@@ -5,4 +5,5 @@ RUN apt-get update && apt-get --yes install \
     postgresql-10-postgis-2.5-scripts \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
 # vim:set ft=dockerfile:

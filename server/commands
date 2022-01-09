@@ -1,0 +1,3 @@
+django-admin startproject app .
+django-admin startapp api
+django-admin startapp blog
