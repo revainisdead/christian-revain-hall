@@ -5,12 +5,16 @@ services:
         build:
             context: .
             dockerfile: dockerfiles/Dockerfile-server
+        depends_on:
+            - db
         env_file: .dockerenv
         working_dir: /srv/app/server
         user: ${UID:-1000}
         environment:
             DEBUG: 'true'
-        command: ./manage.py runserver 0.0.0.0:8004
+            # username:password@{net alias}/{db name}
+            DATABASE_URL: postgres://crhall:crhall@crh-db-net/crhall
+        command: ./manage.py runserver 0.0.0.0:8000
         ports:
             # local:docker
             - "8004:8000"
@@ -42,13 +46,15 @@ services:
             context: .
             dockerfile: dockerfiles/Dockerfile-db
         environment:
+            # This entry point is run by the docker hub postgres image to create and run the database.
+            # https://github.com/docker-library/postgres/blob/master/10/alpine/docker-entrypoint.sh
             POSTGRES_USER: crhall
             POSTGRES_PASSWORD: crhall
             POSTGRES_DB: crhall
-            PG_DATA: /var/lib/postgresql/data/pgdata
+            PGDATA: /var/lib/postgresql/data/pgdata
         ports:
             # local:docker
-            - "5433:5432"
+            - "0:5432"
         volumes:
             - "db-volume:/var/lib/postgresql/data/pgdata"
         networks:

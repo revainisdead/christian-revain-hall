@@ -12,11 +12,14 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 import os
 
+import dj_database_url
+
 from pathlib import Path
 
+
 # Build paths inside the project like this: BASE_DIR / "subdir".
-BASE_DIR = Path(__file__).resolve().parent.parent
-APP_PATH = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
+BASE_DIR = Path(__file__).resolve().parent                           # /srv/app/server
+APP_PATH = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)    # /srv/app/server/crh/../..
 
 print("BASE_DIR test", BASE_DIR)
 print("APP_PATH test", APP_PATH)
@@ -96,15 +99,19 @@ WSGI_APPLICATION = "crh.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+print("TEST DJ CONFIG", dj_database_url.config())
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "crhall",
-        "USER": "crhall",
-        "PASSWORD": "crhall",
-        "HOST": "localhost",
-        "PORT": "5433",
-    }
+    "default": dj_database_url.config(
+        env="DATABASE_URL",
+    ),
+    #"default": {
+    #    "ENGINE": "django.db.backends.postgresql",
+    #    "NAME": "crhall",
+    #    "USER": "crhall",
+    #    "PASSWORD": "crhall",
+    #    "HOST": "localhost",
+    #    "PORT": "5432",
+    #}
 }
 
 
