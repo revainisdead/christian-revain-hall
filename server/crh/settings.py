@@ -21,27 +21,23 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent                           # /srv/app/server
 APP_PATH = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)    # /srv/app/server/crh/../..
 
-print("BASE_DIR test", BASE_DIR)
-print("APP_PATH test", APP_PATH)
-
-def get_secret_key():
-    SECRET_LOCATION = "~/private/"
-    SECRET_FILE = "crh.secret.key"
-
-    try:
-        with open(os.path.join(SECRET_LOCATION, SECRET_FILE), "r") as f:
-            return f.read().rstrip()
-    except (FileNotFoundError, PermissionError) as e:
-        print("Error: must put secret file in the correct secret location. {}".format(e))
+#def get_secret_key():
+#    SECRET_LOCATION = "~/private/"
+#    SECRET_FILE = "crh.secret.key"
+#
+#    try:
+#        with open(os.path.join(SECRET_LOCATION, SECRET_FILE), "r") as f:
+#            return f.read().rstrip()
+#    except (FileNotFoundError, PermissionError) as e:
+#        print("Error: must put secret file in the correct secret location. {}".format(e))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = get_secret_key()
 
-# SECURITY WARNING: don"t run with debug turned on in production!
+SECRET_KEY = os.environ.get("SECRET_KEY", None)
+
 debug_env_var = os.environ.get("DEBUG", False)
 if debug_env_var == "true":
     DEBUG = True

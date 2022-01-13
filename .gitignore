@@ -2,6 +2,7 @@ __pycache__
 *.pyc
 
 *.swp
+*.swo
 *.un
 
 db.sqlite3
