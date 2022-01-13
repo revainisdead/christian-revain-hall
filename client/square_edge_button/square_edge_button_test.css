@@ -1,0 +1,62 @@
+
+/* position */
+/* display */
+
+/* Setting font-size to 0 for the parent element makes it
+ * so that there is no space between child inline-block elements.
+ * NOTE: Set the font-size for child elements as you see fit.
+ */
+body {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.blue-box {
+    background-color: blue;
+}
+
+.red-box {
+    background-color: red;
+}
+
+.box {
+    display: inline-block;
+    width: 75px;
+    height: 30px;
+    margin: 0;
+}
+
+.corner {
+    position: relative;
+    width: 13px;
+    height: 13px;
+    border: none;
+
+}
+
+.top-left {
+    top:    0;
+    right:  0;
+    bottom: 0;
+    left:   0;
+    background-color: white;
+
+    background-image: -webkit-linear-gradient(-45deg, white 50%, blue 50%)
+}
+.bottom-right {
+    top:    calc(100% - 40px);
+    right:  0;
+    bottom: 0;
+    left:   calc(100% - 20px);
+    background-color: white;
+
+    background-image: -webkit-linear-gradient(-45deg, blue 50%, white 50%)
+}
+
+.label {
+    position: relative;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
