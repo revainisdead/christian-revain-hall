@@ -2,6 +2,9 @@ __pycache__
 *.pyc
 
 *.swp
+*.swl
+*.swm
+*.swn
 *.swo
 *.un
 

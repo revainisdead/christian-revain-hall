@@ -1,12 +1,20 @@
-FROM postgres:10.6
+FROM postgres:15.2-bullseye
+
+USER root
 
 # Notes
 # Login to db: `psql -d crhall -U crhall`
 
+#RUN echo "deb http://archive.debian.org/debian stretch main" > /etc/apt/sources.list
+#RUN echo "deb-src http://archive.debian.org/debian stretch main" > /etc/apt/sources.list
+#RUN echo "deb http://archive.debian.org/debian stretch-backports main" > /etc/apt/sources.list
+#RUN echo "deb http://archive.debian.org/debian-security stretch/updates main" > /etc/apt/sources.list
+#RUN echo "deb-src http://archive.debian.org/debian-security stretch/updates main" > /etc/apt/sources.list
+
 RUN apt-get update && apt-get --yes install \
-    postgresql-contrib-10 \
-    postgresql-10-postgis-2.5 \
-    postgresql-10-postgis-2.5-scripts \
+    postgresql-contrib-15 \
+    postgresql-15-postgis-3 \
+    postgresql-15-postgis-3-scripts \
     # netstat, etc.
     net-tools \
     vim \

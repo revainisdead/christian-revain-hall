@@ -187,3 +187,12 @@ detect_platform() {
         fi
     fi
 }
+
+# allows for upgraded docker compose versions
+get_docker_compose() {
+    if [ "$(which docker-compose)" ]; then
+        docker-compose "$@"
+    else
+        docker compose "$@"
+    fi
+}
