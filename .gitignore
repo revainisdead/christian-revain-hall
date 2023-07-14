@@ -12,3 +12,10 @@ db.sqlite3
 secret.key
 
 .dockerenv
+
+one-percent-growth-files/Dockerfile
+one-percent-growth-files/data_excel/
+one-percent-growth-files/data_pdfs_old/
+one-percent-growth-files/docker-compose.yml
+one-percent-growth-files/hierarchy.json
+one-percent-growth-files/new_studentchoiceconnect_pdfs/

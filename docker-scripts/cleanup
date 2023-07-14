@@ -1,3 +1,8 @@
+#!/bin/bash
+
+# Important thing is to not delete all images from another project
+# - Specify image list (not sk images)
+# - Specify volume list (not sk volumes)
 
 # Stop containers
 # Delete python cache files
@@ -7,90 +12,115 @@
 # Drop named volumes client-volume, python-packages
 
 
-##!/bin/bash
-#set -e
-#script_base=$(dirname "$0")
-#cd $script_base/..
-#
-#source $script_base/tools
-#
-#no_input=
-#docker=
-#
-#POSITIONAL=()
-#while [[ $# -gt 0 ]]; do
-#    key="$1"
-#    case $key in
-#        -d|--docker)
-#            docker=1
-#            ;;
-#        -y|--no-input)
-#            no_input=1
-#            ;;
-#        -h|--help|?)
-#            echo "Clean up build files, caches and excess Docker artifacts."
-#            echo
-#            cecho "Usage: $(basename $0) <options>" default bold
-#            echo
-#            echo "Services:"
-#            echo "$(docker-compose config --services)"
-#            echo
-#            echo "Options:"
-#            echo "  -y  --no-input      Assume yes for all user input"
-#            echo "  -h  --help          This help message"
-#            exit 0
-#            ;;
-#        *)
-#            POSITIONAL+=("$1")
-#            ;;
-#    esac
-#    shift
-#done
-#set -- "${POSITIONAL[@]}"
-#
-#if [ ! "$no_input" ]; then
-#    cecho "This will stop you running services and delete cache, build files and docker volumes." yellow bold
-#    read -n1 -r -p "Press 'Y' to continue or any other key to cancel..." key
-#    echo
-#    if [ ! "$key" ] || [[ "yY" != *"$key"* ]]; then
-#        echo
-#        cecho "Aborting." red
-#        exit 0
-#    fi
-#fi
-#
-#echo
-#cecho "Stopping running services..." default bold
-#$script_base/stop
-#
+set -e
+SCRIPT_BASE=$(dirname "$0")
+cd $SCRIPT_BASE/..
+
+source $SCRIPT_BASE/utils
+
+no_input=
+docker=
+
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        -d|--docker)
+            docker=1
+            ;;
+        -y|--no-input)
+            no_input=1
+            ;;
+        -h|--help|?)
+            echo "Clean up build files, caches and excess Docker artifacts."
+            echo
+            cecho "Usage: $(basename $0) <options>" default bold
+            echo
+            echo "Services:"
+            echo "$(docker-compose config --services)"
+            echo
+            echo "Options:"
+            echo "  -y  --no-input      Assume yes for all user input"
+            echo "  -h  --help          This help message"
+            exit 0
+            ;;
+        *)
+            POSITIONAL+=("$1")
+            ;;
+    esac
+    shift
+done
+set -- "${POSITIONAL[@]}"
+
+if [ ! "$no_input" ]; then
+    cecho "This will stop you running services and delete cache, build files and docker volumes." yellow bold
+    read -n1 -r -p "Press 'Y' to continue or any other key to cancel..." key
+    echo
+    if [ ! "$key" ] || [[ "yY" != *"$key"* ]]; then
+        echo
+        cecho "Aborting." red
+        exit 0
+    fi
+fi
+
+echo
+cecho "Stopping running services..." default bold
+$SCRIPT_BASE/stop
+
 #echo
 #cecho "Deleting python cache files..." default bold
 #find . \( -type f -name "*.pyc" -o -type d -name __pycache__ \) -delete
-#
-#if [ "$(which docker)" ]; then
-#    echo
-#    cecho "Deleting stopped SK Docker containers, dangling images and volumes..." default bold
-#
-#    container_list=$(docker-compose ps -q)
-#    if [ "$container_list" ]; then
-#        docker container rm $container_list
-#    fi
-#
-#    volume_list=$(docker volume ls --filter dangling=true -q | awk  '! /summit-knowledge_db-volume/')
-#    if [ "$volume_list" ]; then
-#        docker volume rm $volume_list
-#    fi
-#
-#    image_list=$(docker images --filter dangling=true -q)
-#    if [ "$image_list" ]; then
-#        docker rmi $image_list
-#    fi
-#
-#
-#    echo
-#    cecho "Dropping static file and Redis volumes..." default bold
-#    docker volume rm -f \
-#        summit-knowledge_static-files \
-#        summit-knowledge_redis-volume \
-#        summit-knowledge_python-packages
-#fi
+
+if [ "$(which docker)" ]; then
+    echo
+    cecho "Deleting stopped CRH Docker containers, dangling images and volumes..." default bold
+
+    container_list=$(docker-compose ps -q)
+    if [ "$container_list" ]; then
+        cecho "Removing docker containers: ${container_list}" green
+        docker container rm $container_list
+    fi
+
+    # Remove from consideration both db volumes and all sk volumes.
+    volume_list=$(docker volume ls --filter dangling=true -q |
+        awk '! /christian-revain-hall_db-volume/' |
+        awk '! /summit-knowledge_db-volume/' |
+        awk '! /summit-knowledge_python-packages/' |
+        awk '! /summit-knowledge_redis-volume/' |
+        awk '! /summit-knowledge_static-files/' |
+        awk '! /erp-service_db-volume/' |
+        awk '! /erp-service_python-packages/' |
+        awk '! /erp-service_redis-volume/' |
+        awk '! /erp-service_upload-volume/' |
+        awk '! /login-service_db-volume/' |
+        awk '! /login-service_python-packages/' |
+        awk '! /login-service_redis-volume/'
+    )
+    if [ "$volume_list" ]; then
+        cecho "Removing docker volumes: ${volume_list}" green
+        docker volume rm $volume_list
+    fi
+
+    # Remove from consideration all sk images
+    image_list=$(docker images --filter dangling=true -q |
+        awk '! /summit-knowledge-integration_db/' |
+        awk '! /summit-knowledge-integration_web/' |
+        awk '! /summit-knowledge-integration_celery/' |
+        awk '! /summit-knowledge-integration_static_build/' |
+        awk '! /summit-knowledge-integration_redis/' |
+        awk '! /summit-knowledge-integration_vue/' |
+        awk '! /summit-knowledge-integration_jasmine/' |
+        awk '! /erp-service_erp/' |
+        awk '! /erp-service_celery/' |
+        awk '! /erp-service_db/' |
+        awk '! /erp-service_redis/' |
+        awk '! /login-service_login/' |
+        awk '! /login-service_nginx/' |
+        awk '! /login-service_db/' |
+        awk '! /login-service_redis/'
+    )
+    if [ "$image_list" ]; then
+        cecho "Removing docker images: ${image_list}" green
+        docker rmi $image_list
+    fi
+fi
