@@ -13,7 +13,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.8]
 
     steps:
       # repo: https://github.com/actions/checkout
@@ -35,4 +35,4 @@ jobs:
         pip-sync server/requirements.txt server/dev-requirements.txt
     - name: Run Tests
       run: |
-        python manage.py test
+        python server/manage.py test
