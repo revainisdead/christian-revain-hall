@@ -64,11 +64,11 @@ if [ ! "$no_input" ]; then
     fi
 else
     cecho "Skipping user input prompt." green
-    cecho "'--no-input' argument provided."
+    cecho "'--no-input' argument provided." green
 fi
 
 if [ ! "$skip_cleanup" ]; then
-    $script_base/cleanup --no-input
+    $SCRIPT_BASE/cleanup --no-input
 else
     cecho "Skipping cleanup ('cleanup' script)." green
     cecho "'--skip-cleanup' argument provided." green
@@ -80,9 +80,10 @@ if [ ! "$prod" ]; then
     get_docker_compose build
 else
     get_docker_compose -f docker-compose-prod.yml build
+fi
 
 echo
 cecho "Running database migrations..." default bold
-$script_base/start -d server db
-$script_base/migrate
-$script_base/stop
+$SCRIPT_BASE/start -d server db
+$SCRIPT_BASE/migrate
+$SCRIPT_BASE/stop

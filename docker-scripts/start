@@ -57,9 +57,14 @@ if [ ! "$prod" ]; then
     docker-compose up -d $args
 else
     docker-compose -f docker-compose-prod.yml up -d $args
+fi
 
 if [ "$detach" ]; then
     cecho "Starting in detached mode. Use '$SCRIPT_BASE/attach <service>' to view output." blue bold
 else
-    docker-compose logs --tail 1000 -f $args || teardown
+    if [ ! "$prod" ]; then
+        docker-compose logs --tail 1000 -f $args || teardown
+    else
+        docker-compose -f docker-compose-prod.yml logs --tail 1000 -f $args || teardown
+    fi
 fi

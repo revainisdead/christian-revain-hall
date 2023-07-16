@@ -98,6 +98,7 @@ if [ ! "$prod" ]; then
     get_docker_compose build
 else
     get_docker_compose -f docker-compose-prod.yml build
+fi
 
 echo
 if [ ! "$skip_db" ]; then
