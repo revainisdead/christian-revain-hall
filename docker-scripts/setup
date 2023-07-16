@@ -23,6 +23,7 @@ POSITIONAL=()
 
 skip_install=
 skip_db=
+prod=
 
 # Detailed: While the number of arguments ($#) is greater than (-gt) 0
 while [[ $# -gt 0 ]]; do
@@ -34,6 +35,9 @@ while [[ $# -gt 0 ]]; do
         --skip-db)
             skip_db=1
             ;;
+        -p|--prod)
+            prod=1
+            ;;
         -h|--help|?)
             echo "Install Docker and build images."
             echo
@@ -42,6 +46,7 @@ while [[ $# -gt 0 ]]; do
             echo "Options:"
             echo "      --skip-install  Skip Docker install, just build"
             echo "      --skip-db       Skip database restore script"
+            echo "  -p  --prod          Production setup: docker-compose-prod.yml"
             echo "  -h  --help          This help message"
             exit 0
             ;;
@@ -89,7 +94,10 @@ fi
 
 echo
 cecho "Building images..." blue
-docker-compose build
+if [ ! "$prod" ]; then
+    get_docker_compose build
+else
+    get_docker_compose -f docker-compose-prod.yml build
 
 echo
 if [ ! "$skip_db" ]; then

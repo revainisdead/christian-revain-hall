@@ -14,12 +14,11 @@ services:
             DEBUG: 'true'
             # username:password@{net alias}/{db name}
             DATABASE_URL: postgres://crhall:crhall@crh-db-net/crhall
-        # Prod change
-        command: gunicorn crh.wsgi:application --bind 0.0.0.0:8000
-        retry: always
+        command: gunicorn crh.wsgi:application --bind 0.0.0.0:8004   # Prod change
+        retry: always   # Prod change
         ports:
             # local:docker
-            - "8004:8000"
+            - "8004:8004"
         expose:
           - 8004
         volumes:
@@ -37,7 +36,7 @@ services:
             dockerfile: dockerfiles/Dockerfile-client
         env_file: .dockerenv
         command: echo test client
-        retry: always
+        retry: always   # Prod change
         working_dir: /srv/app/client
         volumes:
             - "./client:/srv/app/client:delegated"
@@ -51,6 +50,7 @@ services:
         build:
             context: .
             dockerfile: dockerfiles/Dockerfile-db
+        retry: always   # Prod change
         environment:
             # This entry point is run by the docker hub postgres image to create and run the database.
             # https://github.com/docker-library/postgres/blob/master/10/alpine/docker-entrypoint.sh
@@ -76,6 +76,7 @@ services:
         build:
             context: .
             dockerfile: dockerfiles/Dockerfile-nginx
+        retry: always   # Prod change
         working_dir: /srv/app/nginx
         ports:
             - 8000:80

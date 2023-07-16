@@ -15,6 +15,7 @@ source $SCRIPT_BASE/utils
 
 no_input=
 skip_cleanup=
+prod=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -25,6 +26,9 @@ while [[ $# -gt 0 ]]; do
             ;;
         -s|--skip-cleanup)
             skip_cleanup=1
+            ;;
+        -p|--prod)
+            prod=1
             ;;
         -h|--help|?)
             echo "Update environment and packages, by running cleanup and then building. Also migrates."
@@ -37,6 +41,7 @@ while [[ $# -gt 0 ]]; do
             echo "Options:"
             echo "  -y  --no-input      Assume yes for all user input"
             echo "  -s  --skip-cleanup  Don't run the cleanup script at all"
+            echo "  -p  --prod          Production setup: docker-compose-prod.yml"
             echo "  -h  --help          This help message"
             exit 0
             ;;
@@ -71,7 +76,10 @@ fi
 
 echo
 cecho "Rebuilding environment..." default bold
-get_docker_compose build
+if [ ! "$prod" ]; then
+    get_docker_compose build
+else
+    get_docker_compose -f docker-compose-prod.yml build
 
 echo
 cecho "Running database migrations..." default bold

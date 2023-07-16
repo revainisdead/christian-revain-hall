@@ -25,7 +25,8 @@ while [[ $# -gt 0 ]]; do
             cecho "Usage: $(basename $0) <options> [SERVICE...]" default bold
             echo
             echo "Options:"
-            echo "  -d                  Detached mode: Run containers in background."
+            echo "  -d  --detach        Detached mode: Run containers in background."
+            echo "  -p  --prod          Production setup: docker-compose-prod.yml"
             echo "  -h  --help          This help message"
             echo
             echo "Run 'docker-compose up --help' to see more options"
@@ -52,10 +53,13 @@ teardown() {
 }
 trap "teardown" INT
 
-docker-compose up -d $args
+if [ ! "$prod" ]; then
+    docker-compose up -d $args
+else
+    docker-compose -f docker-compose-prod.yml up -d $args
 
 if [ "$detach" ]; then
     cecho "Starting in detached mode. Use '$SCRIPT_BASE/attach <service>' to view output." blue bold
 else
-    docker-compose logs -f $args || teardown
+    docker-compose logs --tail 1000 -f $args || teardown
 fi
