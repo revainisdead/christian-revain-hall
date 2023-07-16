@@ -1,4 +1,4 @@
-FROM node:12.0.0
+FROM node:16
 
 USER root
 # check first which npm it comes
@@ -10,6 +10,9 @@ WORKDIR /srv/app
 #RUN chown node.node /srv/app
 COPY --chown=node:node client client
 
-#RUN npm run build
+WORKDIR /srv/app/client
+
+RUN npm install
+RUN npm run build
 
 # vim:set ft=dockerfile:

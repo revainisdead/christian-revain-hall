@@ -29,7 +29,7 @@ while [[ $# -gt 0 ]]; do
 done
 set -- "${POSITIONAL[@]}"
 
-echo Test $@
+#echo Test $@
 if [ ! "$prod" ]; then
     docker-compose stop $@
 else

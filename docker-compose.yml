@@ -31,6 +31,7 @@ services:
         build:
             context: .
             dockerfile: dockerfiles/Dockerfile-client
+        command: npm start
         env_file: .dockerenv
         working_dir: /srv/app/client
         volumes:
