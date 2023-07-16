@@ -66,3 +66,5 @@ Test update_requirements and generate requirements.txt to commit to repo
 - requirements.txt
 
 ---
+
+sudo npm install npm@latest -g
