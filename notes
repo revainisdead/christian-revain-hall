@@ -68,3 +68,7 @@ Test update_requirements and generate requirements.txt to commit to repo
 ---
 
 sudo npm install npm@latest -g
+sudo npm install create-react-app -g
+create-react-app client
+
+
