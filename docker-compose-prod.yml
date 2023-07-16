@@ -11,7 +11,7 @@ services:
         working_dir: /srv/app/server
         user: ${UID:-1000}
         environment:
-            DEBUG: 'true'
+            DEBUG: 'false'  # Prod change
             # username:password@{net alias}/{db name}
             DATABASE_URL: postgres://crhall:crhall@crh-db-net/crhall
         command: gunicorn crh.wsgi:application --bind 0.0.0.0:8004   # Prod change

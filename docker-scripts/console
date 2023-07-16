@@ -61,7 +61,7 @@ case $shell in
         cmd="-u root $target bash"
         ;;
     py|python)
-        cmd="web ./manage.py shell_plus"
+        cmd="server ./manage.py shell_plus"
         ;;
     sql|psql)
         cmd="-u root db psql -U django summit_esp"
