@@ -23,8 +23,9 @@ while [[ $# -gt 0 ]]; do
         -y|--no-input)
             no_input=1
             ;;
-        --skip-cleanup)
+        -s|--skip-cleanup)
             skip_cleanup=1
+            ;;
         -h|--help|?)
             echo "Update environment and packages, by running cleanup and then building. Also migrates."
             echo
@@ -35,7 +36,7 @@ while [[ $# -gt 0 ]]; do
             echo
             echo "Options:"
             echo "  -y  --no-input      Assume yes for all user input"
-            echo "      --skip-cleanup  Don't run the cleanup script at all"
+            echo "  -s  --skip-cleanup  Don't run the cleanup script at all"
             echo "  -h  --help          This help message"
             exit 0
             ;;

@@ -7,11 +7,18 @@ cd $SCRIPT_BASE/..
 source $SCRIPT_BASE/utils
 
 detach=
+prod=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
+        -d|--detach)
+            detach=1
+            ;;
+        -p|--prod)
+            prod=1
+            ;;
         -h|--help|?)
             echo "Rebuild, create, run and attach all or specfic Docker services."
             echo
@@ -23,9 +30,6 @@ while [[ $# -gt 0 ]]; do
             echo
             echo "Run 'docker-compose up --help' to see more options"
             exit 0
-            ;;
-        -d|--detach)
-            detach=1
             ;;
         *)
             POSITIONAL+=("$key")

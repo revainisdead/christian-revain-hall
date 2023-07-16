@@ -1,0 +1,109 @@
+version: '3.5'
+
+services:
+    server:
+        build:
+            context: .
+            dockerfile: dockerfiles/Dockerfile-server
+        depends_on:
+            - db
+        env_file: .dockerenv
+        working_dir: /srv/app/server
+        user: ${UID:-1000}
+        environment:
+            DEBUG: 'true'
+            # username:password@{net alias}/{db name}
+            DATABASE_URL: postgres://crhall:crhall@crh-db-net/crhall
+        # Prod change
+        command: gunicorn crh.wsgi:application --bind 0.0.0.0:8000
+        retry: always
+        ports:
+            # local:docker
+            - "8004:8000"
+        expose:
+          - 8004
+        volumes:
+            - ".:/srv/app:delegated"
+            - "static-volume:/srv/app/static:z"
+            - "python-packages:/usr/local/lib/python3.10/site-packages:z"
+        networks:
+            app_net:
+                ipv4_address: 172.32.1.1
+                aliases:
+                    - crh-server-net
+    client:
+        build:
+            context: .
+            dockerfile: dockerfiles/Dockerfile-client
+        env_file: .dockerenv
+        command: echo test client
+        retry: always
+        working_dir: /srv/app/client
+        volumes:
+            - "./client:/srv/app/client:delegated"
+            - "static-volume:/srv/app/static:z"
+        networks:
+            app_net:
+                ipv4_address: 172.32.1.2
+                aliases:
+                    - crh-client-net
+    db:
+        build:
+            context: .
+            dockerfile: dockerfiles/Dockerfile-db
+        environment:
+            # This entry point is run by the docker hub postgres image to create and run the database.
+            # https://github.com/docker-library/postgres/blob/master/10/alpine/docker-entrypoint.sh
+            POSTGRES_USER: crhall
+            POSTGRES_PASSWORD: crhall
+            POSTGRES_DB: crhall
+            PGDATA: /var/lib/postgresql/data/pgdata
+        ports:
+            # local:docker
+            - "0:5432"
+        expose:
+            - 5432
+        volumes:
+            # alternate solution:
+            # "db-volume:/var/lib/postgresql/data/docker-pgdata:z"
+            - "db-volume:/var/lib/postgresql/docker/pgdata:z"
+        networks:
+            app_net:
+                ipv4_address: 172.32.1.3
+                aliases:
+                    - crh-db-net
+    nginx:
+        build:
+            context: .
+            dockerfile: dockerfiles/Dockerfile-nginx
+        working_dir: /srv/app/nginx
+        ports:
+            - 8000:80
+        depends_on:
+            - server
+        volumes:
+            - "python-packages:/usr/local/lib/python3.10/site-packages:z"
+        networks:
+            app_net:
+                ipv4_address: 172.32.1.4
+                aliases:
+                    - crh-nginx-net
+
+
+volumes:
+    db-volume:
+        name: christian-hall_db-volume
+    static-volume:
+        name: christian-hall_static-volume
+    python-packages:
+        name: christian-hall_python-packages
+
+networks:
+    app_net:
+        name: crh-net
+        driver: bridge
+        # Prod change
+        external: true
+        ipam:
+            config:
+                - subnet: 172.32.0.0/16
