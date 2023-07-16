@@ -49,7 +49,11 @@ fi
 args=$@
 
 teardown() {
-    $SCRIPT_BASE/stop $args
+    if [ ! "$prod" ]; then
+        $SCRIPT_BASE/stop $args
+    else
+        $SCRIPT_BASE/stop --prod $args
+    fi
 }
 trap "teardown" INT
 
