@@ -18,8 +18,9 @@ cd $SCRIPT_BASE/..
 
 source $SCRIPT_BASE/utils
 
-no_input=
 docker=
+no_input=
+prod=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -31,6 +32,9 @@ while [[ $# -gt 0 ]]; do
         -y|--no-input)
             no_input=1
             ;;
+        -p|--prod)
+            prod=1
+            ;;
         -h|--help|?)
             echo "Clean up build files, caches and excess Docker artifacts."
             echo
@@ -41,6 +45,7 @@ while [[ $# -gt 0 ]]; do
             echo
             echo "Options:"
             echo "  -y  --no-input      Assume yes for all user input"
+            echo "  -p  --prod          Production setup: docker-compose-prod.yml"
             echo "  -h  --help          This help message"
             exit 0
             ;;
@@ -75,7 +80,44 @@ if [ "$(which docker)" ]; then
     echo
     cecho "Deleting stopped CRH Docker containers, dangling images and volumes..." default bold
 
-    container_list=$(docker-compose ps -q)
+    if [ ! "$prod" ]; then
+        container_list=$(get_docker_compose ps -q |
+            awk '! /summit-knowledge-integration_db/' |
+            awk '! /summit-knowledge-integration_web/' |
+            awk '! /summit-knowledge-integration_celery/' |
+            awk '! /summit-knowledge-integration_static_build/' |
+            awk '! /summit-knowledge-integration_redis/' |
+            awk '! /summit-knowledge-integration_vue/' |
+            awk '! /summit-knowledge-integration_jasmine/' |
+            awk '! /erp-service_erp/' |
+            awk '! /erp-service_celery/' |
+            awk '! /erp-service_db/' |
+            awk '! /erp-service_redis/' |
+            awk '! /login-service_login/' |
+            awk '! /login-service_nginx/' |
+            awk '! /login-service_db/' |
+            awk '! /login-service_redis/'
+        )
+    else
+        container_list=$(get_docker_compose -f docker-compose-prod.yml ps -q |
+            awk '! /summit-knowledge-integration_db/' |
+            awk '! /summit-knowledge-integration_web/' |
+            awk '! /summit-knowledge-integration_celery/' |
+            awk '! /summit-knowledge-integration_static_build/' |
+            awk '! /summit-knowledge-integration_redis/' |
+            awk '! /summit-knowledge-integration_vue/' |
+            awk '! /summit-knowledge-integration_jasmine/' |
+            awk '! /erp-service_erp/' |
+            awk '! /erp-service_celery/' |
+            awk '! /erp-service_db/' |
+            awk '! /erp-service_redis/' |
+            awk '! /login-service_login/' |
+            awk '! /login-service_nginx/' |
+            awk '! /login-service_db/' |
+            awk '! /login-service_redis/'
+        )
+    fi
+
     if [ "$container_list" ]; then
         cecho "Removing docker containers: ${container_list}" green
         docker container rm $container_list

@@ -68,7 +68,11 @@ else
 fi
 
 if [ ! "$skip_cleanup" ]; then
-    $SCRIPT_BASE/cleanup --no-input
+    if [ ! "$prod" ]; then
+        $SCRIPT_BASE/cleanup --no-input
+    else
+        $SCRIPT_BASE/cleanup --no-input --prod
+    fi
 else
     cecho "Skipping cleanup ('cleanup' script)." green
     cecho "'--skip-cleanup' argument provided." green
