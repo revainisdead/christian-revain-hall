@@ -79,7 +79,7 @@ case $cmd in
         if [ "$fake" ]; then
             opts+="--fake "
         fi
-        get_docker_compose exec web ./manage.py migrate --noinput $opts $@
+        get_docker_compose exec server ./manage.py migrate --noinput $opts $@
         ;;
     make)
         opts=
@@ -92,9 +92,9 @@ case $cmd in
         if [ "$name" ]; then
             opts+="--name $name "
         fi
-        get_docker_compose exec -u 1000 web ./manage.py makemigrations $opts $@
+        get_docker_compose exec -u 1000 server ./manage.py makemigrations $opts $@
         ;;
     show)
-        get_docker_compose exec web ./manage.py showmigrations $@
+        get_docker_compose exec server ./manage.py showmigrations $@
         ;;
 esac

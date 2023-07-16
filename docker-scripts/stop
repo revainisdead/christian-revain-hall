@@ -6,10 +6,15 @@ cd $script_base/..
 
 source $script_base/utils
 
+prod=
+
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
+        -p|--prod)
+            prod=1
+            ;;
         -h|--help|?)
             echo "Stop all or specfic running Docker services."
             echo
@@ -25,4 +30,8 @@ done
 set -- "${POSITIONAL[@]}"
 
 echo Test $@
-docker-compose stop $@
+if [ ! "$prod" ]; then
+    docker-compose stop $@
+else
+    docker-compose -f docker-compose-prod.yml stop $@
+fi
