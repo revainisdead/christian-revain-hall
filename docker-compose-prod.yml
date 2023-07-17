@@ -73,6 +73,7 @@ services:
         build:
             context: .
             dockerfile: dockerfiles/Dockerfile-nginx
+        command: nginx -g 'daemon off;'
         working_dir: /srv/app/nginx
         ports:
             - 8000:80
@@ -82,6 +83,7 @@ services:
         volumes:
             - "python-packages:/usr/local/lib/python3.10/site-packages:z"
             - "build-volume:/srv/app/client/build:z"
+            - "./client/build:/var/www/christian-revain-hall/html:delegated"
         networks:
             app_net:
                 ipv4_address: 172.32.1.4

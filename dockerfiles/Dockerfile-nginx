@@ -1,9 +1,17 @@
-FROM nginx:1.17.4-alpine
+FROM nginx:1.17.4
 
 RUN apk update && apk add bash
 
 RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/conf.d
+
+
+#USER node
+#WORKDIR /srv/app/client
+#RUN npm run build
+
+
+USER root
 
 # start bash shell
 RUN /bin/bash

@@ -72,3 +72,7 @@ sudo npm install create-react-app -g
 create-react-app client
 (???) npm audit fix --force
 npm install --save react-router-dom
+
+sudo systemctl start docker
+# permission denied error 13
+sudo chown ubuntu:ubuntu /var/run/docker.sock
