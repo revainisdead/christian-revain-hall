@@ -31,7 +31,11 @@ services:
         build:
             context: .
             dockerfile: dockerfiles/Dockerfile-client
-        command: npm start
+        command: npm run start
+        ports:
+            - "8003:8003"
+        expose:
+            - 8003
         env_file: .dockerenv
         working_dir: /srv/app/client
         volumes:

@@ -125,7 +125,7 @@ if [ "$(which docker)" ]; then
 
     # Remove from consideration both db volumes and all sk volumes.
     volume_list=$(docker volume ls --filter dangling=true -q |
-        awk '! /christian-revain-hall_db-volume/' |
+        awk '! /christian-hall_db-volume/' |
         awk '! /summit-knowledge_db-volume/' |
         awk '! /summit-knowledge_python-packages/' |
         awk '! /summit-knowledge_redis-volume/' |
