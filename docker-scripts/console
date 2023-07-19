@@ -14,6 +14,7 @@ echo root path: $ROOT
 
 
 target=server
+prod=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -22,6 +23,9 @@ while [[ $# -gt 0 ]]; do
         -t|--target)
             target=$2
             shift
+            ;;
+        -p|--prod)
+            prod=1
             ;;
         -h|--help|?)
             echo "Launch an interactive console on the appropriate service."
@@ -37,6 +41,7 @@ while [[ $# -gt 0 ]]; do
             echo "Options:"
             echo "  -h  --help          This help message"
             echo "  -t  --target        Choose which service to connect to for 'bash' or 'sudo' consoles (default: web)"
+            echo "  -p  --prod          Production setup: docker-compose-prod.yml"
             exit 0
             ;;
         *)
@@ -52,6 +57,15 @@ if [ "$1" ]; then
 else
     shell="bash"
 fi
+
+if [ "$target" = "nginx" ]; then
+    prod=1
+else
+    prod=0
+fi
+
+echo \*\* Shell: $shell
+echo \*\* Target: $target
 
 case $shell in
     bash)
@@ -78,5 +92,10 @@ case $shell in
         ;;
 esac
 
-# shellcheck disable=SC2086 # Intended splitting of cmd
-get_docker_compose exec -e COLUMNS="$(tput cols)" -e LINES="$(tput lines)" $cmd
+if [ ! "$prod" ]; then
+    # shellcheck disable=SC2086 # Intended splitting of cmd
+    get_docker_compose exec -e COLUMNS="$(tput cols)" -e LINES="$(tput lines)" $cmd
+else
+    # shellcheck disable=SC2086 # Intended splitting of cmd
+    get_docker_compose -f docker-compose-prod.yml exec -e COLUMNS="$(tput cols)" -e LINES="$(tput lines)" $cmd
+fi
