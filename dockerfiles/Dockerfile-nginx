@@ -3,14 +3,16 @@ FROM nginx:1.17.4
 #RUN apk update && apk add bash
 
 RUN apt-get update && apt-get --yes install \
-    procps \    # ps
-    net-tools \  # netstat
-    vim \       # file edit
+    # ps
+    procps \
+    # netstat
+    net-tools \
+    vim \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
 
 RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx.conf /etc/nginx/conf.d
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 
 #USER node
@@ -18,7 +20,7 @@ COPY nginx.conf /etc/nginx/conf.d
 #RUN npm run build
 
 
-USER root
+#USER root
 
 # start bash shell
 #RUN /bin/bash

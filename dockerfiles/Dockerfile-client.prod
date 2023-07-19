@@ -10,11 +10,13 @@ WORKDIR /srv/app
 #RUN chown node.node /srv/app
 COPY --chown=node:node client client
 
-WORKDIR /srv/app/client
-
+# wrong container, need html in nginx
+#USER root
+#RUN mkdir -p /var/www/christian-revain-hall/html/
 # build directory already included in client copy, move to prod location
-RUN cp -r /srv/app/client/build/ /var/www/christian-revain-hall/html
+#RUN cp -a /srv/app/client/build/. /var/www/christian-revain-hall/html
 
+WORKDIR /srv/app/client
 #RUN npm install
 #RUN npm run build
 
