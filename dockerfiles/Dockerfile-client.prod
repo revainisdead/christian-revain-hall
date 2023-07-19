@@ -1,0 +1,21 @@
+FROM node:16
+
+USER root
+# check first which npm it comes
+#RUN yarn global add npm@12.22.8
+#RUN npm install -g lerna@2.5.1
+
+USER node
+WORKDIR /srv/app
+#RUN chown node.node /srv/app
+COPY --chown=node:node client client
+
+WORKDIR /srv/app/client
+
+# build directory already included in client copy, move to prod location
+RUN cp -r /srv/app/client/build/ /var/www/christian-revain-hall/html
+
+#RUN npm install
+#RUN npm run build
+
+# vim:set ft=dockerfile:

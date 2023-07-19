@@ -32,13 +32,12 @@ services:
     client:
         build:
             context: .
-            dockerfile: dockerfiles/Dockerfile-client
+            dockerfile: dockerfiles/Dockerfile-client.prod
         env_file: .dockerenv
         working_dir: /srv/app/client
         volumes:
             - "./client:/srv/app/client:delegated"
             - "static-volume:/srv/app/static:z"
-            - "build-volume:/srv/app/client/build:z"
         networks:
             app_net:
                 ipv4_address: 172.32.1.2
@@ -98,8 +97,6 @@ volumes:
         name: christian-hall_static-volume
     python-packages:
         name: christian-hall_python-packages
-    build-volume:
-        name: christian-hall_build-volume
 
 networks:
     app_net:
