@@ -21,16 +21,6 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent                           # /srv/app/server
 APP_PATH = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)    # /srv/app/server/crh/../..
 
-#def get_secret_key():
-#    SECRET_LOCATION = "~/private/"
-#    SECRET_FILE = "crh.secret.key"
-#
-#    try:
-#        with open(os.path.join(SECRET_LOCATION, SECRET_FILE), "r") as f:
-#            return f.read().rstrip()
-#    except (FileNotFoundError, PermissionError) as e:
-#        print("Error: must put secret file in the correct secret location. {}".format(e))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
@@ -59,6 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
 ]
 
 MIDDLEWARE = [

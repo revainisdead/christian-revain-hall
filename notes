@@ -76,3 +76,5 @@ npm install --save react-router-dom
 sudo systemctl start docker
 # permission denied error 13
 sudo chown ubuntu:ubuntu /var/run/docker.sock
+
+# Setup rest framework API

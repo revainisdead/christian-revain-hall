@@ -120,7 +120,7 @@ if [ "$(which docker)" ]; then
 
     if [ "$container_list" ]; then
         cecho "Removing docker containers: ${container_list}" green
-        docker container rm $container_list
+        docker container rm -f $container_list
     fi
 
     # Remove from consideration both db volumes and all sk volumes.
@@ -140,7 +140,7 @@ if [ "$(which docker)" ]; then
     )
     if [ "$volume_list" ]; then
         cecho "Removing docker volumes: ${volume_list}" green
-        docker volume rm $volume_list
+        docker volume rm -f $volume_list
     fi
 
     # Remove from consideration all sk images
@@ -163,6 +163,6 @@ if [ "$(which docker)" ]; then
     )
     if [ "$image_list" ]; then
         cecho "Removing docker images: ${image_list}" green
-        docker rmi $image_list
+        docker rmi -f $image_list
     fi
 fi
