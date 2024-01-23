@@ -75,7 +75,8 @@ case $shell in
         cmd="-u root $target bash"
         ;;
     py|python)
-        cmd="server ./manage.py shell_plus"
+        #cmd="server ./manage.py shell_plus"
+        cmd="server ./manage.py shell"
         ;;
     sql|psql)
         cmd="-u root db psql -U crhall crhall"

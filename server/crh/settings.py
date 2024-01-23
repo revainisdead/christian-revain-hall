@@ -26,7 +26,7 @@ APP_PATH = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)    # /s
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 
-SECRET_KEY = os.environ.get("SECRET_KEY", None)
+SECRET_KEY = "LSMNDFHGNSKDHJTIMNWSREPGMHOPWSIDTFLQPXDMFNRNEKCKEJYJHSHMADJF"
 
 debug_env_var = os.environ.get("DEBUG", False)
 if debug_env_var == "true":
@@ -142,3 +142,9 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+}

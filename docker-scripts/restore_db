@@ -7,4 +7,4 @@ echo Script Base: $SCRIPT_BASE
 
 source $SCRIPT_BASE/utils
 
-cecho "Note: Restoring database from a local dump will come soon." yellow
+cecho "Restore database script." yellow
