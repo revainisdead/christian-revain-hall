@@ -25,8 +25,8 @@ from crh.views import (
 )
 
 router = routers.DefaultRouter()
-router.register(r"groups", GroupsLinkViewSet)
-router.register(r"users", UsersLinkViewSet)
+router.register(r"groups", GroupsViewSet)
+router.register(r"users", UsersViewSet)
 router.register(r"groups-link", GroupsLinkViewSet)
 router.register(r"users-link", UsersLinkViewSet)
 
