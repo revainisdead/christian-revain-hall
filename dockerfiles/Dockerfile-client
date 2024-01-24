@@ -13,6 +13,6 @@ COPY --chown=node:node client client
 WORKDIR /srv/app/client
 
 RUN npm install
-RUN npm run build
+#RUN npm run build
 
 # vim:set ft=dockerfile:

@@ -1,0 +1,10 @@
+npm init vite client -- --template vue
+
+
+sudo apt -f install
+cd /var/cache/apt/archives/
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - &&sudo apt-get install -y nodejs
+sudo dpkg -i --force-overwrite nodejs_18.19.0-1nodesource1_amd64.deb
+  cd client
+  npm install
+  npm run dev

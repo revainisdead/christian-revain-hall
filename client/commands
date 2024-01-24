@@ -1,0 +1,3 @@
+npm install --save quasar @quasar/extras
+npm install --save-dev @quasar/vite-plugin sass@^1.33.0
+./docker-scripts/console bash -t client
