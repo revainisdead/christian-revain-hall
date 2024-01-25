@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "crh",
     "api",
     "blog",
+    "bank",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

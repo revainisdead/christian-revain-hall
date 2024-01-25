@@ -24,6 +24,8 @@ from crh.views import (
     UsersLinkViewSet,
 )
 
+from bank.urls import ROUTER_URLS
+
 router = routers.DefaultRouter()
 router.register(r"groups", GroupsViewSet)
 router.register(r"users", UsersViewSet)
@@ -34,6 +36,7 @@ router.register(r"users-link", UsersLinkViewSet)
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include(router.urls)),
+    path("bank-api/", include(ROUTER_URLS)),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
 ]
 

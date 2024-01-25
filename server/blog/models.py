@@ -1,3 +1,3 @@
 from django.db import models
 
-class PortfolioPicture(models.Model): pass
+#class PortfolioPicture(models.Model): pass
