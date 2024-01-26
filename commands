@@ -1,10 +1,10 @@
-npm init vite client -- --template vue
+npm init vite my-vue-app -- --template vue
 
+npm install --save quasar @quasar/extras
+npm install --save-dev @quasar/vite-plugin sass@^1.33.0
+./docker-scripts/console bash -t client
 
-sudo apt -f install
-cd /var/cache/apt/archives/
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - &&sudo apt-get install -y nodejs
-sudo dpkg -i --force-overwrite nodejs_18.19.0-1nodesource1_amd64.deb
-  cd client
-  npm install
-  npm run dev
+# Mistake: Created Vite project, then added quasar vite plugin.
+# New (fix): Create Quasar project, then add quasar vite plugin to add vite.
+
+npm init quasar

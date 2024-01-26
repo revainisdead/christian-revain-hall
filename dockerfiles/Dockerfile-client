@@ -5,6 +5,10 @@ USER root
 #RUN yarn global add npm@12.22.8
 #RUN npm install -g lerna@2.5.1
 
+RUN npm install -g @vue/cli
+RUN npm install -g @quasar/cli
+#RUN yarn global add @quasar/cli
+
 USER node
 WORKDIR /srv/app
 #RUN chown node.node /srv/app
@@ -14,5 +18,31 @@ WORKDIR /srv/app/client
 
 RUN npm install
 #RUN npm run build
+#
+#RUN npm run qbuild
+
+
+WORKDIR /srv/app/client
+
+# Tutorial: https://medium.com/@jwdobken/develop-quasar-applications-with-docker-a19c38d4a6ac
+
+## develop stage
+#FROM node:13.14-alpine as develop-stage
+#WORKDIR /app
+#COPY package*.json ./
+#RUN yarn global add @quasar/cli
+#COPY . .
+#
+## build stage
+#FROM develop-stage as build-stage
+#RUN yarn
+#RUN quasar build
+#
+## production stage
+#FROM nginx:1.17.5-alpine as production-stage
+#COPY --from=build-stage /app/dist/spa /usr/share/nginx/html
+#EXPOSE 80
+#CMD ["nginx", "-g", "daemon off;"]
+
 
 # vim:set ft=dockerfile:
