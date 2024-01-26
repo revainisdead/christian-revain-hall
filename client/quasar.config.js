@@ -12,7 +12,9 @@
 const { configure } = require('quasar/wrappers');
 
 
-module.exports = configure(function (/* ctx */) {
+module.exports = configure(function (ctx) {
+  console.log("Quasar config:", ctx)
+
   return {
     eslint: {
       // fix: true,
@@ -59,7 +61,12 @@ module.exports = configure(function (/* ctx */) {
         browser: [ 'es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1' ],
         node: 'node20'
       },
-
+      //extendWebpack(cfg) {
+      //  cfg.watchOptions = {
+      //    aggregateTimeout: 200,
+      //    poll: 1000,
+      //  };
+      //},
       vueRouterMode: 'hash', // available values: 'hash', 'history'
       // vueRouterBase,
       // vueDevtools,
@@ -79,7 +86,6 @@ module.exports = configure(function (/* ctx */) {
       // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},
 
-      
       // vitePlugins: [
       //   [ 'package-name', { ..options.. } ]
       // ]
@@ -88,7 +94,18 @@ module.exports = configure(function (/* ctx */) {
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
     devServer: {
       // https: true
-      open: true // opens browser window automatically
+      open: false, // *Docker: change to false* opens browser window automatically
+      proxy: {
+        "/api": {
+            target: "http://localhost:8008/api",
+            changeOrigin: true,
+            //rewrite: (path) => path.replace(/^\/api/, "")
+        },
+        "/socket.io": {
+            target: "ws://localhost:9000",
+            ws: true,
+        }
+      }
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework
