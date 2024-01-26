@@ -1,0 +1,10 @@
+npm init vite my-vue-app -- --template vue
+
+npm install --save quasar @quasar/extras
+npm install --save-dev @quasar/vite-plugin sass@^1.33.0
+./docker-scripts/console bash -t client
+
+# Mistake: Created Vite project, then added quasar vite plugin.
+# New (fix): Create Quasar project, then add quasar vite plugin to add vite.
+
+npm init quasar
