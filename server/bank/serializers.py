@@ -15,12 +15,21 @@ from bank.models import BankAccount, Transaction
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
-        fields = ["date", "description", "amount", "balance"]
+        fields = [
+            "id",
+            "date",
+            "description",
+            "amount",
+            "balance",
+            "bank_account",
+            #"sign",
+        ]
 
 
 class BankAccountSerializer(serializers.ModelSerializer):
-    transactions = TransactionSerializer(many=True)
+    transactions = TransactionSerializer(many=True, read_only=True)
     class Meta:
         model = BankAccount
-        fields = ["transactions"]
+        #fields = ["transactions"]
+        fields = ["id", "transactions", "user"]
 
