@@ -2,9 +2,9 @@
   <q-page class="row items-center justify-evenly">
     <example-component
       title="Example component"
-      active
+      active="false"
       :todos="todos"
-      :meta="meta"
+      :meta="{ ...meta }"
     ></example-component>
   </q-page>
 </template>
@@ -21,29 +21,34 @@ export default defineComponent({
     const todos = ref<Todo[]>([
       {
         id: 1,
-        content: 'ct1'
+        content: 'ct1',
+        completed: true,
       },
       {
         id: 2,
-        content: 'ct2'
+        content: 'ct2',
+        completed: true,
       },
       {
         id: 3,
-        content: 'ct3'
+        content: 'ct3',
+        completed: true,
       },
       {
         id: 4,
-        content: 'ct4'
+        content: 'ct4',
+        completed: false,
       },
       {
         id: 5,
-        content: 'ct5'
-      }
+        content: 'ct5',
+        completed: false,
+      },
     ]);
     const meta = ref<Meta>({
-      totalCount: 1200
+      totalCount: 1200,
     });
     return { todos, meta };
-  }
+  },
 });
 </script>

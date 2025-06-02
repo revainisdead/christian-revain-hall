@@ -87,8 +87,8 @@ module.exports = configure(function (ctx) {
           viteConf.server = {
               ...viteConf.server,
               watch: {
-                //usePolling: true,
-                //interval: 1000,
+                usePolling: true,
+                interval: 1000,
                 ignored: ['**/node_modules/**', '**/.git/**'],
               },
               hmr: {
