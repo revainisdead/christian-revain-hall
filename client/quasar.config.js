@@ -92,10 +92,10 @@ module.exports = configure(function (ctx) {
                 ignored: ['**/node_modules/**', '**/.git/**'],
               },
               hmr: {
-                clientPort: 9000, // NOTE: this is the external / local dev port
+                clientPort: 8007, // NOTE: this is the external / local dev port
               }
           }
-          console.log('Vite watch config:', viteConf.server.watch);
+          console.log('Vite watch config:', viteConf.server.watch, viteConf.server.hmr);
       },
       // viteVuePluginOptions: {},
 
