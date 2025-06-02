@@ -7,7 +7,7 @@ services:
             dockerfile: dockerfiles/Dockerfile-server
         depends_on:
             - db
-        env_file: .dockerenv
+        env_file: .env
         working_dir: /srv/app/server
         user: ${UID:-1000}
         environment:
@@ -34,7 +34,7 @@ services:
         command: npm run dev
         ports:
             - "8007:9000"
-        env_file: .dockerenv
+        env_file: .env
         working_dir: /srv/app/client
         volumes:
             - "./client:/srv/app/client:delegated"
@@ -58,6 +58,7 @@ services:
         ports:
             # local:docker
             - "0:5432"
+        env_file: .env
         expose:
             - 5432
         volumes:
@@ -85,3 +86,4 @@ networks:
         ipam:
             config:
                 - subnet: 172.32.0.0/16
+        external: ${EXTERNAL_NET:false}
