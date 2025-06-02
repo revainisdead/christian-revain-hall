@@ -7,7 +7,7 @@ services:
             dockerfile: dockerfiles/Dockerfile-server
         depends_on:
             - db
-        env_file: .dockerenv
+        env_file: .env
         working_dir: /srv/app/server
         user: ${UID:-1000}
         environment:
@@ -33,7 +33,7 @@ services:
         build:
             context: .
             dockerfile: dockerfiles/Dockerfile-client.prod
-        env_file: .dockerenv
+        env_file: .env
         working_dir: /srv/app/client
         volumes:
             - "./client:/srv/app/client:delegated"

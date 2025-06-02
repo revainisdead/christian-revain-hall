@@ -1,28 +1,26 @@
 FROM node:16
 
 USER root
+
 # check first which npm it comes
 #RUN yarn global add npm@12.22.8
 #RUN npm install -g lerna@2.5.1
 
-RUN npm install -g @vue/cli
-RUN npm install -g @quasar/cli
+#RUN npm install -g @vue/cli
+#RUN npm install -g @quasar/cli
 #RUN yarn global add @quasar/cli
 
 USER node
 WORKDIR /srv/app
 #RUN chown node.node /srv/app
-COPY --chown=node:node client client
 
 WORKDIR /srv/app/client
 
+COPY --chown=node:node ./client/package.*json ./
 RUN npm install
+
+
 #RUN npm run build
-#
-#RUN npm run qbuild
-
-
-WORKDIR /srv/app/client
 
 # Tutorial: https://medium.com/@jwdobken/develop-quasar-applications-with-docker-a19c38d4a6ac
 

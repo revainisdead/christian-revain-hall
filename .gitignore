@@ -13,6 +13,7 @@ secret.key
 
 .env
 .dockerenv
+node_modules/
 
 one-percent-growth-files/Dockerfile
 one-percent-growth-files/data_excel/

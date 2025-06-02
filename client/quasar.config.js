@@ -83,7 +83,20 @@ module.exports = configure(function (ctx) {
       // polyfillModulePreload: true,
       // distDir
 
-      // extendViteConf (viteConf) {},
+      extendViteConf (viteConf) {
+          viteConf.server = {
+              ...viteConf.server,
+              watch: {
+                //usePolling: true,
+                //interval: 1000,
+                ignored: ['**/node_modules/**', '**/.git/**'],
+              },
+              hmr: {
+                clientPort: 9000, // NOTE: this is the external / local dev port
+              }
+          }
+          console.log('Vite watch config:', viteConf.server.watch);
+      },
       // viteVuePluginOptions: {},
 
       // vitePlugins: [
@@ -97,12 +110,13 @@ module.exports = configure(function (ctx) {
       open: false, // *Docker: change to false* opens browser window automatically
       proxy: {
         "/api": {
-            target: "http://localhost:8008/api",
+            target: "http://crh-server-net:8000/api",
             changeOrigin: true,
             //rewrite: (path) => path.replace(/^\/api/, "")
         },
         "/socket.io": {
-            target: "ws://localhost:9000",
+            //target: "ws://localhost:9000", // prod target?
+            target: "crh-client-net:9000",
             ws: true,
         }
       }
