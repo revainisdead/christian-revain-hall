@@ -2,13 +2,13 @@ createConfig = () => {
     const config = defineConfig({
         server: {
             hmr: {
-                host: "localhost":,
+                host: 'localhost:9000',
                 port: 9000,
-                protocol: "ws",
+                protocol: 'ws',
             },
         },
     });
-    console.log("vite config:", config"
+    console.log('vite config:', config)
 
     return config;
 }

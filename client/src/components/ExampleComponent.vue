@@ -65,6 +65,6 @@ console.log('props:', props);
 console.log('active:', active);
 
 const { clickCount, clickCountIncrement, _clickCountDecrement } = useClickCount()
-const { todoCount, _displayTodoMarkComplete, _displayTodoMarkUncomplete } = useDisplayTodo(todos.value)
+const { todoCount, _displayTodoMarkComplete, _displayTodoMarkUncomplete } = useDisplayTodo(todos)
 
 </script>

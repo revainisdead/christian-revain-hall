@@ -15,7 +15,7 @@ echo root path: $ROOT
 
 target=client
 fix=0
-prod=
+prod=0
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -26,11 +26,12 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -f|--fix)
-            fix=$3
+            fix=1
             shift
             ;;
         -p|--prod)
-            prod=0
+            prod=1
+            shift
             ;;
         -h|--help|?)
             echo "Launch an interactive console on the appropriate service."
@@ -62,13 +63,12 @@ else
     prod=0
 fi
 
-echo \*\* Target: $target
-
 if [ "$fix" = 1 ]; then
     cmd="npm run lintfix"
 else
     cmd="npm run lint"
 fi
+
 
 if [ ! "$prod" ]; then
     # shellcheck disable=SC2086 # Intended splitting of cmd

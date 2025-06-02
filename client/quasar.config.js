@@ -13,7 +13,7 @@ const { configure } = require('quasar/wrappers');
 
 
 module.exports = configure(function (ctx) {
-  console.log("Quasar config:", ctx)
+  console.log('Quasar config:', ctx)
 
   return {
     eslint: {
@@ -109,14 +109,14 @@ module.exports = configure(function (ctx) {
       // https: true
       open: false, // *Docker: change to false* opens browser window automatically
       proxy: {
-        "/api": {
-            target: "http://crh-server-net:8000/api",
+        '/api': {
+            target: 'http://crh-server-net:8000/api',
             changeOrigin: true,
             //rewrite: (path) => path.replace(/^\/api/, "")
         },
-        "/socket.io": {
+        '/socket.io': {
             //target: "ws://localhost:9000", // prod target?
-            target: "crh-client-net:9000",
+            target: 'crh-client-net:9000',
             ws: true,
         }
       }
