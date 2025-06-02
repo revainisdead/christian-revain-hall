@@ -95,8 +95,8 @@ esac
 
 if [ ! "$prod" ]; then
     # shellcheck disable=SC2086 # Intended splitting of cmd
-    get_docker_compose exec -e COLUMNS="$(tput cols)" -e LINES="$(tput lines)" $cmd
+    get_docker_compose exec --target $target -e COLUMNS="$(tput cols)" -e LINES="$(tput lines)" $cmd
 else
     # shellcheck disable=SC2086 # Intended splitting of cmd
-    get_docker_compose -f docker-compose-prod.yml exec -e COLUMNS="$(tput cols)" -e LINES="$(tput lines)" $cmd
+    get_docker_compose -f docker-compose-prod.yml exec --target $target -e COLUMNS="$(tput cols)" -e LINES="$(tput lines)" $cmd
 fi

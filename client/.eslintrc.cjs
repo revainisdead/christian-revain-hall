@@ -6,10 +6,11 @@ module.exports = {
 
   // https://eslint.vuejs.org/user-guide/#how-to-use-a-custom-parser
   // Must use parserOptions instead of "parser" to allow vue-eslint-parser to keep working
-  // `parser: 'vue-eslint-parser'` is already included with any 'plugin:vue/**' config and should be omitted
+  parser: 'vue-eslint-parser', // is already included with any 'plugin:vue/**' config and should be omitted
   parserOptions: {
-    parser: require.resolve('@typescript-eslint/parser'),
-    extraFileExtensions: [ '.vue' ]
+    parser: '@typescript-eslint/parser',
+    ecmaVersion: 2020,
+    sourceType: 'module'
   },
 
   env: {
@@ -22,7 +23,7 @@ module.exports = {
   // Rules order is important, please avoid shuffling them
   extends: [
     // Base ESLint recommended rules
-    'eslint:recommended',
+    //'eslint:recommended',
 
     // https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin#usage
     // ESLint typescript rules
@@ -89,15 +90,16 @@ module.exports = {
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
 
     // allow unused functions as long as they start with _ (protected)
-    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_"}],
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_"}]
 
     // always allow trailing comma as it is correct
-    "comma-dangle": ["error", "always-multiline"],
+    //"comma-dangle": ["error", "always-multiline"],
   },
   overrides: [
     {
       files: ['*.vue'],
       rules: {
+        'comma-dangle': 'off', // turn off because typescript eslint configured to enforce trailing comma too
         '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }]
       }
     }

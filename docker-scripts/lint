@@ -1,0 +1,79 @@
+#!/bin/bash
+
+# docker-compose exec --target client eslint --ext .js,.ts,.vue ./
+
+set -e
+SCRIPT_BASE=$(dirname "$0")
+
+echo Script Base: $SCRIPT_BASE
+
+source $SCRIPT_BASE/utils
+
+ROOT=$(resolve_path "$SCRIPT_BASE/..")
+echo root path: $ROOT
+
+
+target=client
+fix=0
+prod=
+
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        -t|--target)
+            target=$2
+            shift
+            ;;
+        -f|--fix)
+            fix=$3
+            shift
+            ;;
+        -p|--prod)
+            prod=0
+            ;;
+        -h|--help|?)
+            echo "Launch an interactive console on the appropriate service."
+            echo
+            cecho "Usage: $(basename "$0") [<CONSOLE TYPE>]" default bold
+            echo
+            echo "Lint Checks:"
+            echo "  eslint"
+            echo "  python (not implemented)"
+            echo
+            echo "Options:"
+            echo "  -h  --help          This help message"
+            echo "  -t  --target        Choose which service to connect to for linting (default: server)"
+            echo "  -f  --fix           Automatically fix eslint errors if possible"
+            echo "  -p  --prod          Production setup: docker-compose-prod.yml"
+            exit 0
+            ;;
+        *)
+            POSITIONAL+=("$key")
+            ;;
+    esac
+    shift
+done
+set -- "${POSITIONAL[@]}"
+
+if [ "$target" = "nginx" ]; then
+    prod=1
+else
+    prod=0
+fi
+
+echo \*\* Target: $target
+
+if [ "$fix" = 1 ]; then
+    cmd="npm run lintfix"
+else
+    cmd="npm run lint"
+fi
+
+if [ ! "$prod" ]; then
+    # shellcheck disable=SC2086 # Intended splitting of cmd
+    COLUMNS="$(tput cols)" LINES="$(tput lines)" get_docker_compose exec $target $cmd
+else
+    # shellcheck disable=SC2086 # Intended splitting of cmd
+    COLUMNS="$(tput cols)" LINES="$(tput lines)" get_docker_compose -f docker-compose-prod.yml exec $target $cmd
+fi
