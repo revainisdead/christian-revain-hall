@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Example: ./docker-scripts/manage showmigrations
+
+
+set -e
+SCRIPT_BASE=$(dirname "$0")
+cd $SCRIPT_BASE/..
+
+source $SCRIPT_BASE/utils
+
+
+create_user=
+
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        -u|--user)
+            create_user=1
+            ;;
+        -h|--help|?)
+            echo "Run Django manage.py command with arguments."
+            echo
+            cecho "Usage: $(basename $0) [COMMAND] <options> [args...]" default bold
+            echo
+            echo "Commands:"
+            echo "  [<args>...]         Run any manage.py command inside docker for development."
+            echo
+            echo "Options:"
+            echo "  -h  --help          This help message"
+            exit 0
+            ;;
+        *)
+            POSITIONAL+=("$1")
+            ;;
+    esac
+    shift
+done
+set -- "${POSITIONAL[@]}"
+
+case $create_user in
+    1)
+        get_docker_compose exec server ./manage.py createsuperuser
+        ;;
+    ?)
+        get_docker_compose exec server ./manage.py $@
+        ;;
+esac

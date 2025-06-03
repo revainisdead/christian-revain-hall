@@ -1,1 +1,3 @@
 ./docker-scripts/lint --target client --fix bash
+
+# python manage.py makemigrations --dry-run
