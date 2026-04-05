@@ -23,7 +23,6 @@ POSITIONAL=()
 
 skip_install=
 skip_db=
-prod=
 
 # Detailed: While the number of arguments ($#) is greater than (-gt) 0
 while [[ $# -gt 0 ]]; do
@@ -35,9 +34,6 @@ while [[ $# -gt 0 ]]; do
         --skip-db)
             skip_db=1
             ;;
-        -p|--prod)
-            prod=1
-            ;;
         -h|--help|?)
             echo "Install Docker and build images."
             echo
@@ -46,8 +42,11 @@ while [[ $# -gt 0 ]]; do
             echo "Options:"
             echo "      --skip-install  Skip Docker install, just build"
             echo "      --skip-db       Skip database restore script"
-            echo "  -p  --prod          Production setup: docker-compose-prod.yml"
             echo "  -h  --help          This help message"
+            echo
+            echo "Environment Variables:"
+            echo "  PROD=0              Development setup: docker-compose.yml (default)"
+            echo "  PROD=1              Production setup: docker-compose-prod.yml"
             exit 0
             ;;
         *)
@@ -73,6 +72,9 @@ done
 # ie. if a positional argument is -z, then it will be passed directly to set.
 set -- "${POSITIONAL[@]}"
 
+# Default to development environment
+PROD=${PROD:-0}
+
 echo ARG0 test $0
 echo ARG1 test $1
 echo ARG2 test $2
@@ -94,11 +96,7 @@ fi
 
 echo
 cecho "Building images..." blue
-if [ ! "$prod" ]; then
-    get_docker_compose build
-else
-    get_docker_compose -f docker-compose-prod.yml build
-fi
+docker_compose build
 
 echo
 if [ ! "$skip_db" ]; then

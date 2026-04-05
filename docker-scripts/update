@@ -6,6 +6,9 @@
 # ./docker-scripts/update --no-input --skip-cleanup
 # Lastly, if you pass just skip cleanup, it will prompt you, but still skip it.
 # ./docker-scripts/update --skip-cleanup
+#
+# For production environment, set PROD=1:
+# PROD=1 ./docker-scripts/update --no-input
 
 set -e
 SCRIPT_BASE=$(dirname "$0")
@@ -15,7 +18,6 @@ source $SCRIPT_BASE/utils
 
 no_input=
 skip_cleanup=
-prod=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -27,22 +29,22 @@ while [[ $# -gt 0 ]]; do
         -s|--skip-cleanup)
             skip_cleanup=1
             ;;
-        -p|--prod)
-            prod=1
-            ;;
         -h|--help|?)
             echo "Update environment and packages, by running cleanup and then building. Also migrates."
             echo
             cecho "Usage: $(basename $0) <options> <SERVICE>]" default bold
             echo
             echo "Services:"
-            echo "$(get_docker_compose config --services)"
+            echo "$(docker_compose config --services)"
             echo
             echo "Options:"
             echo "  -y  --no-input      Assume yes for all user input"
             echo "  -s  --skip-cleanup  Don't run the cleanup script at all"
-            echo "  -p  --prod          Production setup: docker-compose-prod.yml"
             echo "  -h  --help          This help message"
+            echo
+            echo "Environment Variables:"
+            echo "  PROD=0              Development setup: docker-compose.yml (default)"
+            echo "  PROD=1              Production setup: docker-compose-prod.yml"
             exit 0
             ;;
         *)
@@ -52,6 +54,9 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 set -- "${POSITIONAL[@]}"
+
+# Default to development environment
+PROD=${PROD:-0}
 
 if [ ! "$no_input" ]; then
     cecho "This will delete many files and volumes and may be destructive to work in progress." yellow bold
@@ -68,11 +73,7 @@ else
 fi
 
 if [ ! "$skip_cleanup" ]; then
-    if [ ! "$prod" ]; then
-        $SCRIPT_BASE/cleanup --no-input
-    else
-        $SCRIPT_BASE/cleanup --no-input --prod
-    fi
+    $SCRIPT_BASE/cleanup --no-input
 else
     cecho "Skipping cleanup ('cleanup' script)." green
     cecho "'--skip-cleanup' argument provided." green
@@ -80,11 +81,7 @@ fi
 
 echo
 cecho "Rebuilding environment..." default bold
-if [ ! "$prod" ]; then
-    get_docker_compose build
-else
-    get_docker_compose -f docker-compose-prod.yml build
-fi
+docker_compose build
 
 echo
 cecho "Running database migrations..." default bold

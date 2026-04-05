@@ -7,7 +7,6 @@ cd $SCRIPT_BASE/..
 source $SCRIPT_BASE/utils
 
 detach=
-prod=
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -16,9 +15,6 @@ while [[ $# -gt 0 ]]; do
         -d|--detach)
             detach=1
             ;;
-        -p|--prod)
-            prod=1
-            ;;
         -h|--help|?)
             echo "Rebuild, create, run and attach all or specfic Docker services."
             echo
@@ -26,8 +22,11 @@ while [[ $# -gt 0 ]]; do
             echo
             echo "Options:"
             echo "  -d  --detach        Detached mode: Run containers in background."
-            echo "  -p  --prod          Production setup: docker-compose-prod.yml"
             echo "  -h  --help          This help message"
+            echo
+            echo "Environment Variables:"
+            echo "  PROD=0              Development setup: docker-compose.yml (default)"
+            echo "  PROD=1              Production setup: docker-compose-prod.yml"
             echo
             echo "Run 'docker-compose up --help' to see more options"
             exit 0
@@ -40,6 +39,8 @@ while [[ $# -gt 0 ]]; do
 done
 set -- "${POSITIONAL[@]}"
 
+# Default to development environment
+PROD=${PROD:-0}
 
 if [ ! "$(docker network ls | grep crh-net)" ]; then
     cecho "Shared network not found, creating..." yellow bold
@@ -48,27 +49,15 @@ fi
 
 args=$@
 
-teardown() {
-    if [ ! "$prod" ]; then
-        $SCRIPT_BASE/stop $args
-    else
-        $SCRIPT_BASE/stop --prod $args
-    fi
+stop_first() {
+    $SCRIPT_BASE/stop $args
 }
-trap "teardown" INT
+trap "stop_first" INT
 
-if [ ! "$prod" ]; then
-    docker-compose up -d $args
-else
-    docker-compose -f docker-compose-prod.yml up -d $args
-fi
+docker_compose up -d $args
 
 if [ "$detach" ]; then
     cecho "Starting in detached mode. Use '$SCRIPT_BASE/attach <service>' to view output." blue bold
 else
-    if [ ! "$prod" ]; then
-        docker-compose logs --tail 1000 -f $args || teardown
-    else
-        docker-compose -f docker-compose-prod.yml logs --tail 1000 -f $args || teardown
-    fi
+    docker_compose logs --tail 1000 -f $args || teardown
 fi

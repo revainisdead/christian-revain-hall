@@ -6,19 +6,18 @@ cd $script_base/..
 
 source $script_base/utils
 
-prod=
-
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
-        -p|--prod)
-            prod=1
-            ;;
         -h|--help|?)
             echo "Stop all or specfic running Docker services."
             echo
             cecho "Usage: $(basename $0) [SERVICE...]" default bold
+            echo
+            echo "Environment Variables:"
+            echo "  PROD=0              Development setup: docker-compose.yml (default)"
+            echo "  PROD=1              Production setup: docker-compose-prod.yml"
             exit 0
             ;;
         *)
@@ -29,9 +28,7 @@ while [[ $# -gt 0 ]]; do
 done
 set -- "${POSITIONAL[@]}"
 
-#echo Test $@
-if [ ! "$prod" ]; then
-    docker-compose stop $@
-else
-    docker-compose -f docker-compose-prod.yml stop $@
-fi
+# Default to development environment
+PROD=${PROD:-0}
+
+docker_compose stop $@

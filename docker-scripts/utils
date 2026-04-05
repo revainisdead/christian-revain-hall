@@ -196,3 +196,19 @@ get_docker_compose() {
         docker compose "$@"
     fi
 }
+
+# Get the appropriate docker-compose file based on PROD environment variable
+# PROD=0 (or unset) = development (docker-compose.yml)
+# PROD=1 = production (docker-compose-prod.yml)
+get_compose_file() {
+    if [ "$PROD" = "1" ]; then
+        echo "docker-compose-prod.yml"
+    else
+        echo "docker-compose.yml"
+    fi
+}
+
+# Wrapper that automatically selects the correct compose file
+docker_compose() {
+    get_docker_compose -f "$(get_compose_file)" "$@"
+}

@@ -15,7 +15,6 @@ echo root path: $ROOT
 
 target=client
 fix=0
-prod=0
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -29,10 +28,6 @@ while [[ $# -gt 0 ]]; do
             fix=1
             shift
             ;;
-        -p|--prod)
-            prod=1
-            shift
-            ;;
         -h|--help|?)
             echo "Launch an interactive console on the appropriate service."
             echo
@@ -44,9 +39,12 @@ while [[ $# -gt 0 ]]; do
             echo
             echo "Options:"
             echo "  -h  --help          This help message"
-            echo "  -t  --target        Choose which service to connect to for linting (default: server)"
+            echo "  -t  --target        Choose which service to connect to for linting (default: client)"
             echo "  -f  --fix           Automatically fix eslint errors if possible"
-            echo "  -p  --prod          Production setup: docker-compose-prod.yml"
+            echo
+            echo "Environment Variables:"
+            echo "  PROD=0              Development setup: docker-compose.yml (default)"
+            echo "  PROD=1              Production setup: docker-compose-prod.yml"
             exit 0
             ;;
         *)
@@ -57,11 +55,8 @@ while [[ $# -gt 0 ]]; do
 done
 set -- "${POSITIONAL[@]}"
 
-if [ "$target" = "nginx" ]; then
-    prod=1
-else
-    prod=0
-fi
+# Default to development environment
+PROD=${PROD:-0}
 
 if [ "$fix" = 1 ]; then
     cmd="npm run lintfix"
@@ -69,11 +64,5 @@ else
     cmd="npm run lint"
 fi
 
-
-if [ ! "$prod" ]; then
-    # shellcheck disable=SC2086 # Intended splitting of cmd
-    COLUMNS="$(tput cols)" LINES="$(tput lines)" get_docker_compose exec $target $cmd
-else
-    # shellcheck disable=SC2086 # Intended splitting of cmd
-    COLUMNS="$(tput cols)" LINES="$(tput lines)" get_docker_compose -f docker-compose-prod.yml exec $target $cmd
-fi
+# shellcheck disable=SC2086 # Intended splitting of cmd
+COLUMNS="$(tput cols)" LINES="$(tput lines)" docker_compose exec $target $cmd
