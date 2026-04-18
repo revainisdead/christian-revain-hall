@@ -1,0 +1,61 @@
+#!/bin/bash
+
+set -e
+SCRIPT_BASE=$(dirname "$0")
+
+echo Script Base: $SCRIPT_BASE
+
+source $SCRIPT_BASE/utils
+
+ROOT=$(resolve_path "$SCRIPT_BASE/..")
+echo root path: $ROOT
+
+
+target=server
+
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        -h|--help|?)
+            echo "Use quasar-cli commands inside of docker at the host cli."
+            echo
+            cecho "Usage: $(basename "$0") [<CONSOLE TYPE>]" default bold
+            echo
+            echo "Options:"
+            echo "  -h  --help          This help message"
+            echo
+            exit 0
+            ;;
+        *)
+            POSITIONAL+=("$key")
+            ;;
+    esac
+    shift
+done
+set -- "${POSITIONAL[@]}"
+
+# Default to development environment
+PROD=${PROD:-0}
+
+if [ "$1" ]; then
+    echo First arg received: "$1"
+else
+    echo No first arg received.
+fi
+
+target=client
+cmd="-w /srv/app/ -u root $target quasar $@"
+
+debug_info() {
+    echo \*\* Prod: "$PROD"
+    echo \*\* Arg1: "$1"
+    echo \*\* Arg2: "$2"
+    echo \*\* Target: "$target"
+    echo \*\* Command: "$cmd"
+}
+debug_info
+
+
+# shellcheck disable=SC2086 # Intended splitting of cmd
+COLUMNS="$(tput cols)" LINES="$(tput lines)" docker_compose exec $cmd

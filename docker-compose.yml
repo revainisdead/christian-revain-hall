@@ -4,7 +4,8 @@ services:
             context: .
             dockerfile: dockerfiles/Dockerfile-server
         depends_on:
-            - db
+            db:
+              condition: service_healthy
         env_file: .env
         working_dir: /srv/app/server
         user: ${UID:-1000}
@@ -47,6 +48,11 @@ services:
         build:
             context: .
             dockerfile: dockerfiles/Dockerfile-db
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U crhall"]
+            interval: 2s
+            timeout: 5s
+            retries: 10
         environment:
             # This entry point is run by the docker hub postgres image to create and run the database.
             # https://github.com/docker-library/postgres/blob/master/10/alpine/docker-entrypoint.sh

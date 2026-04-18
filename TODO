@@ -1,0 +1,12 @@
+- Error in quasar lint: no hot reload
+- Quasar with vite: usage
+- script setup vs defineComponent
+- vue router (new page for essential links)
+- entry page: "Go" -> if logged in: play, if not logged in: create account / login
+- donate button
+- google auth
+- jwt: json simple web token, connect to django user
+- chess.js, chess pypi package for bots
+- html of 16 slots, row column? design
+- canvas: draw on top of html, first transparent, then directional arrows
+- start small

@@ -190,10 +190,13 @@ detect_platform() {
 
 # allows for upgraded docker compose versions
 get_docker_compose() {
-    if [ "$(which docker-compose)" ]; then
+    if docker compose version >/dev/null 2>&1; then
+        docker compose "$@"
+    elif [ "$(which docker-compose)" ]; then
         docker-compose "$@"
     else
-        docker compose "$@"
+        echo "No docker compose found." >&2
+        exit 1
     fi
 }
 

@@ -42,10 +42,10 @@ set -- "${POSITIONAL[@]}"
 # Default to development environment
 PROD=${PROD:-0}
 
-if [ ! "$(docker network ls | grep crh-net)" ]; then
-    cecho "Shared network not found, creating..." yellow bold
-    docker network create --driver=bridge --subnet=172.32.0.0/16 crh-net
-fi
+#if [ ! "$(docker network ls | grep crh-net)" ]; then
+#    cecho "Shared network not found, creating..." yellow bold
+#    docker network create --driver=bridge --subnet=172.32.0.0/16 crh-net
+#fi
 
 args=$@
 
