@@ -70,3 +70,4 @@ fi
 # TODO: after migrate is run, create default superuser
 
 # ./docker-scripts/manage createsuperuser
+# ./docker-scripts/manage startapp accounts

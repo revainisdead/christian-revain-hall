@@ -1,4 +1,9 @@
-# social media badges
+# BlunderProof
+
+- Chess training tool. Never blunder again.
+
+
+## social media badges
 
 Blog:               http://christian-revain-hall.com
 
@@ -11,11 +16,11 @@ LinkedIn:           https://linkedin.com/in/christianhall8
 Twitter:            https://twitter.com/revainisdead
 
 
-# Contact Me
+## Contact Me
 
 > christian-revain-hall@gmail.com
 
 
-# For Local Development
+## For Local Development
 
 URL:    http://127.0.0.1:8008
