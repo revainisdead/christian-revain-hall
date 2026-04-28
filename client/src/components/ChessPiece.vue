@@ -1,9 +1,9 @@
 
 <template>
   <div
-    class="board-piece"
+    class="board-piece chess-piece"
   >
-  <img src="/JohnPablok Cburnett Chess set/SVG No shadow/b_bishop_svg_NoShadow">
+  <img src="/JohnPablok Cburnett Chess set/SVG No shadow/b_bishop_svg_NoShadow.svg">
 
   </div>
 </template>
@@ -24,9 +24,16 @@ console.log('file url test:', fileUrl)
   height: 49px;
   position: relative;
   display: inline-block;
-
   margin: 0 0 0 0;
+}
 
-  z-index: 9990
+.chess-piece {
+  width: 45px;
+  height: 45px;
+  display: inline-block;
+  margin: 2px 2px 2px 2px;
+
+  position: absolute;
+  z-index: 9991;
 }
 </style>

@@ -1,0 +1,38 @@
+#!/bin/bash
+
+set -e
+
+SCRIPT_BASE=$(dirname "$0")
+cd $SCRIPT_BASE/..
+
+source $SCRIPT_BASE/utils
+
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        -u|--user)
+            create_user=1
+            ;;
+        -h|--help|?)
+            echo "Client utility for using npm inside docker."
+            echo
+            cecho "Usage: $(basename $0) [COMMAND] <options> [args...]" default bold
+            echo
+            echo "Commands:"
+            echo "  [<args>...]         Run any npm command inside docker for development."
+            echo
+            echo "Options:"
+            echo "  -h  --help          This help message"
+            exit 0
+            ;;
+        *)
+            POSITIONAL+=("$1")
+            ;;
+    esac
+    shift
+done
+set -- "${POSITIONAL[@]}"
+
+
+get_docker_compose exec -u root client npm $@

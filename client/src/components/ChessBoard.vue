@@ -89,6 +89,8 @@ const colIndexMap = {
   6: 7,
   7: 8,
 };
+console.log(rowIndexMap)
+console.log(colIndexMap)
 
 // position: "e2"
 
