@@ -1,7 +1,8 @@
 <template>
   <div
     class="board-piece"
-    :class="{ num: props.num, dark: isDarkSquare, light: !isDarkSquare }">
+    :class="{ num: props.num, dark: isDarkSquare, light: !isDarkSquare }"
+  >
   </div>
 </template>
 
@@ -9,7 +10,7 @@
   import { computed } from 'vue';
 
   interface Props {
-    num: number;
+    num?: number;
     dark: boolean;
   }
 

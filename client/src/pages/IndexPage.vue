@@ -1,7 +1,12 @@
 <template>
   <q-page class="row items-center justify-evenly">
-    <ChessBoard>
-    </ChessBoard>
+    <div class="board-container">
+      <ChessBoard>
+      </ChessBoard>
+
+      <ChessOverlay>
+      </ChessOverlay>
+    </div>
 
     { todos }
 
@@ -15,6 +20,7 @@ import { Todo, Meta } from 'components/models';
 import { ref } from 'vue';
 
 import ChessBoard from 'components/ChessBoard.vue';
+import ChessOverlay from 'components/ChessOverlay.vue';
 
 const todos = ref<Todo[]>([
   {
@@ -47,3 +53,14 @@ const meta = ref<Meta>({
   totalCount: 1200,
 });
 </script>
+
+
+<style>
+.board-container {
+  position: relative;
+  width: 400px;
+  height: 400px;
+  border: 2px solid black;
+}
+
+</style>

@@ -1,19 +1,19 @@
 <template>
-  <BoardPiece num="" :dark="normalLight">
+  <BoardPiece num="1" :dark="normalLight">
   </BoardPiece>
-  <BoardPiece num="" :dark="normalDark">
+  <BoardPiece num="2" :dark="normalDark">
   </BoardPiece>
-  <BoardPiece num="" :dark="normalLight">
+  <BoardPiece num="3" :dark="normalLight">
   </BoardPiece>
-  <BoardPiece num="" :dark="normalDark">
+  <BoardPiece num="4" :dark="normalDark">
   </BoardPiece>
-  <BoardPiece num="" :dark="normalLight">
+  <BoardPiece num="5" :dark="normalLight">
   </BoardPiece>
-  <BoardPiece num="" :dark="normalDark">
+  <BoardPiece num="6" :dark="normalDark">
   </BoardPiece>
-  <BoardPiece num="" :dark="normalLight">
+  <BoardPiece num="7" :dark="normalLight">
   </BoardPiece>
-  <BoardPiece num="" :dark="normalDark">
+  <BoardPiece num="8" :dark="normalDark">
   </BoardPiece>
 </template>
 
