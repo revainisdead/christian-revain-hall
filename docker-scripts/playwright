@@ -1,0 +1,8 @@
+#!/bin/bash
+
+#docker compose exec client npx playwright codegen http://localhost:300
+
+#xvfb-run npx playwright codegen http://client:3000
+
+npx playwright codegen http://localhost:8007
+
