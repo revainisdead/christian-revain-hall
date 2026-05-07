@@ -17,6 +17,8 @@ from django.contrib import admin
 from django.urls import include, path
 from rest_framework import routers
 
+from chess.views import TrainingGroundsViewSet
+
 from crh.views import (
     GroupsViewSet,
     UsersViewSet,
@@ -32,10 +34,13 @@ router.register(r"users", UsersViewSet)
 router.register(r"groups-link", GroupsLinkViewSet)
 router.register(r"users-link", UsersLinkViewSet)
 
+chess_router = routers.DefaultRouter()
+chess_router.register(r"training_grounds", TrainingGroundsViewSet, basename="training_grounds")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", include(router.urls)),
+    path("api/", include(chess_router.urls)),
+    path("api/accounts/", include(router.urls)),
     path("bank-api/", include(ROUTER_URLS)),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
 ]
