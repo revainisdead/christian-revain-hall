@@ -11,7 +11,7 @@ Chess training tool. Never blunder again.
 - **Client:** Vue 3 + Quasar (Vite, TypeScript), in `client/`
 - **Server:** Django + Django REST Framework, in `server/`
 - **Database:** PostgreSQL
-- **Dev environment:** Docker Compose (`docker-compose.yml`), with helper scripts in `docker-scripts/`
+- **Environments:** Docker Compose. `docker-compose.yml` is the base; `docker-compose.override.yml` (dev) is loaded automatically; `docker-compose.prod.yml` is for prod (set `COMPOSE_FILE` in `.env`, see `.env.example`). Helper scripts are in `docker-scripts/`.
 
 ## Local development
 

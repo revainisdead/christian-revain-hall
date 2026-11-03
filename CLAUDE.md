@@ -27,6 +27,14 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
 - `docker-scripts/`: wrappers around `docker compose` (`setup`, `start`, `stop`, `migrate`, `manage`, `lint`, `npm`, `console`, ...). Run with `-h` for usage.
 - `dockerfiles/`: `Dockerfile-server` (Python 3.8), `Dockerfile-client` (Node 20 + Playwright Chromium), db, nginx.
 
+## Docker Compose files
+
+- `docker-compose.yml`: base services shared by all environments (server, client, db, volumes, network). Never used alone.
+- `docker-compose.override.yml`: dev (runserver, `npm run dev`, DEBUG on). `docker compose` loads it automatically.
+- `docker-compose.prod.yml`: prod (gunicorn, DEBUG off, one-shot `npm run build` into `client/dist/spa`, nginx serving it and proxying `/api/` to the server).
+- Choosing an environment: on the prod server set `COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml` in `.env`. `PROD=1` / `PROD=0` on any `docker-scripts/*` command forces prod or dev (`docker_compose` in `docker-scripts/utils`).
+- Put shared settings in the base file and only differences in the overrides. Compose appends list fields like `ports`, so keep those out of the base.
+
 ## URLs and ports
 
 - Client dev server: http://127.0.0.1:8007 (container port 9000)

@@ -36,7 +36,6 @@ done
 set -- "${POSITIONAL[@]}"
 
 # Default to development environment
-PROD=${PROD:-0}
 
 if [ "$1" ]; then
     echo First arg received: "$1"

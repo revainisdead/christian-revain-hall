@@ -1,0 +1,39 @@
+# Production overrides, merged on top of docker-compose.yml.
+# On the prod server put this in .env so plain commands use it:
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml
+services:
+    server:
+        environment:
+            DEBUG: 'false'
+        command: gunicorn crh.wsgi:application --bind 0.0.0.0:8001
+        ports:
+            # local:docker
+            - "8001:8001"
+        expose:
+            - 8001
+    client:
+        # One-shot build: writes client/dist/spa (bind-mounted), which nginx serves.
+        command: npm run build
+        restart: "no"
+    nginx:
+        build:
+            context: .
+            dockerfile: dockerfiles/Dockerfile-nginx
+        command: nginx -c /etc/nginx/nginx.conf -g 'daemon off;'
+        working_dir: /srv/app/nginx
+        ports:
+            - 80:80
+        expose:
+            - 80
+        depends_on:
+            client:
+                condition: service_completed_successfully
+            server:
+                condition: service_started
+        volumes:
+            - "./client/dist/spa:/usr/share/nginx/html:ro"
+        networks:
+            app_net:
+                ipv4_address: 172.32.1.4
+                aliases:
+                    - crh-nginx-net

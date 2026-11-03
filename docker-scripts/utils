@@ -200,18 +200,15 @@ get_docker_compose() {
     fi
 }
 
-# Get the appropriate docker-compose file based on PROD environment variable
-# PROD=0 (or unset) = development (docker-compose.yml)
-# PROD=1 = production (docker-compose-prod.yml)
-get_compose_file() {
-    if [ "$PROD" = "1" ]; then
-        echo "docker-compose-prod.yml"
-    else
-        echo "docker-compose.yml"
-    fi
-}
-
-# Wrapper that automatically selects the correct compose file
+# Wrapper that selects the compose files.
+#   PROD=1  force prod: docker-compose.yml + docker-compose.prod.yml
+#   PROD=0  force dev:  docker-compose.yml + docker-compose.override.yml
+#   unset   let docker compose decide: COMPOSE_FILE from the environment or .env if set
+#           (set it in .env on the prod server), else docker-compose.yml + docker-compose.override.yml
 docker_compose() {
-    get_docker_compose -f "$(get_compose_file)" "$@"
+    case "${PROD:-}" in
+        1) get_docker_compose -f docker-compose.yml -f docker-compose.prod.yml "$@" ;;
+        0) get_docker_compose -f docker-compose.yml -f docker-compose.override.yml "$@" ;;
+        *) get_docker_compose "$@" ;;
+    esac
 }

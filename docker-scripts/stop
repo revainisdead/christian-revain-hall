@@ -16,8 +16,8 @@ while [[ $# -gt 0 ]]; do
             cecho "Usage: $(basename $0) [SERVICE...]" default bold
             echo
             echo "Environment Variables:"
-            echo "  PROD=0              Development setup: docker-compose.yml (default)"
-            echo "  PROD=1              Production setup: docker-compose-prod.yml"
+            echo "  PROD=0              Force dev compose files (default: COMPOSE_FILE, else dev)"
+            echo "  PROD=1              Force prod: docker-compose.yml + docker-compose.prod.yml"
             exit 0
             ;;
         *)
@@ -29,6 +29,5 @@ done
 set -- "${POSITIONAL[@]}"
 
 # Default to development environment
-PROD=${PROD:-0}
 
 docker_compose stop $@
