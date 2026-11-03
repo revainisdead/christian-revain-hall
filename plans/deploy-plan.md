@@ -6,7 +6,7 @@ Status: draft. Run BlunderProof on the **existing EC2 instance** and domain, usi
 
 | | |
 |---|---|
-| Domain | `christian-revain-hall.com` (http only today) |
+| Domain | `christian-revain-hall.com` (http only today); registrar and DNS at **GoDaddy** |
 | Instance | EC2 `t2.small` (1 vCPU, 2 GB RAM), us-east-2 |
 | Elastic IP | `3.132.194.70` (stays the same through every stage) |
 | Private IP | `172.31.1.91` (default VPC) |
@@ -21,6 +21,13 @@ Each stage below works on its own. Stop at any stage for as long as you like.
 Before changing anything on the box:
 
 1. **Snapshot the EBS volume** (EC2 → Volumes → Create snapshot). This is the undo button for everything below.
+1. **Back up the Salt setup** (master/minion configs, states, pillar), which worked before and is worth keeping:
+   ```bash
+   ls /etc/salt /srv/salt /srv/pillar 2>/dev/null        # where it lives; is this box the master, a minion, or both?
+   sudo tar czf ~/salt-backup.tgz /etc/salt /srv/salt /srv/pillar
+   # then from your machine: scp ubuntu@3.132.194.70:~/salt-backup.tgz .
+   ```
+   Pillar data often holds secrets, so review it before anything goes into the repo. Salt manages *what's on a box* (packages, files, services); Terraform manages *which boxes and AWS resources exist*. They complement each other, so the Salt states can live on as `infra/salt/` (Stage 2.5).
 2. Write down what's there:
    ```bash
    cat /etc/os-release              # OS + version
@@ -99,7 +106,23 @@ make migrate
   ```
 - Renewal: a cron job runs `certbot renew`, then reloads nginx (`make renew-certs`).
 - Django: `SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")`. nginx already sends `X-Forwarded-Proto`.
-- Google console: add `https://christian-revain-hall.com` (and `www`) as authorized JavaScript origins.
+- Google console: add `https://christian-revain-hall.com` as an authorized JavaScript origin.
+- **Cost: free.** Let's Encrypt certificates are free and renew automatically every 60–90 days. Don't buy GoDaddy's SSL add-on. AWS's free certificates (ACM) only work behind a load balancer or CloudFront, which costs around $16+/month, so they're overkill for one box.
+- **`www`:** not required, but some people type it. Make the bare domain canonical and **301-redirect `www` to it**. That costs nothing: one GoDaddy DNS record, plus `www` on the same certificate.
+
+### GoDaddy DNS
+
+| Type | Name | Value |
+|---|---|---|
+| A | `@` | `3.132.194.70` (probably already set) |
+| CNAME | `www` | `@` (i.e. `christian-revain-hall.com`) |
+
+Both have to resolve before certbot can issue the certificate for both names.
+
+## Stage 2.5: Bring Salt back (optional)
+
+Put the sanitized Salt states in `infra/salt/` (secrets stay in pillar files that aren't committed, or in SSM). Have them describe the box: Docker + Compose plugin, swap, unattended-upgrades, the deploy user, cron jobs (cert renewal, backups). Then a rebuilt box is `salt-call --local state.apply` away, which is a natural step before Terraform.
+
 
 ### Hardening
 
@@ -130,7 +153,7 @@ make migrate
 Terraform doesn't require a new machine. **`terraform import`** adopts existing resources so they're managed as code from then on:
 
 - `aws_instance` (this box), `aws_eip` (`3.132.194.70`), `aws_security_group`, `aws_ebs_volume`
-- the Route 53 zone and records, if the domain uses Route 53
+- DNS: GoDaddy has a Terraform provider (community-maintained). Alternatively move only DNS hosting to Route 53 (about $0.50/month per zone) by pointing GoDaddy's nameservers at it, and keep the registration at GoDaddy.
 - an S3 bucket for Terraform state (with locking), plus the backup bucket from Stage 2
 
 Run `terraform plan` until it shows **no changes**. At that point the code exactly describes the live setup. After that, changes such as security group rules, the IAM role for SSM, or backup policies go through Terraform.
@@ -155,8 +178,9 @@ With everything in code:
 | 7 | GHCR images (Stage 4) | Repo |
 | 8 | Terraform import (Stage 5) | Repo + you (AWS credentials) |
 
-## Open questions
+## Decisions
 
-1. Where is the domain's DNS: Route 53, or a registrar such as GoDaddy or Namecheap? Either works with the Elastic IP; Route 53 can also be managed by Terraform in Stage 5.
-2. Is there anything on the current box worth keeping (old database, files)? If not, the Stage 0 snapshot is enough.
-3. Should `www.christian-revain-hall.com` serve the site too, or redirect to the bare domain?
+- DNS is at GoDaddy; it stays there for now (Route 53 is optional at Stage 5).
+- The old box's Salt setup gets backed up in Stage 0 and may come back as `infra/salt/`.
+- `www` 301-redirects to `christian-revain-hall.com`.
+- HTTPS via Let's Encrypt (free).
