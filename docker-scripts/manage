@@ -57,13 +57,13 @@ case $create_user in
 esac
 
 if [[ "$change_pass" == 1 ]]; then
-    get_docker_compose exec server ./manage.py changepassword $@
+    get_docker_compose exec server ./manage.py changepassword "$@"
 fi
 
 
 
 if [[ "$create_user" == 0 && "$change_pass" == 0 ]]; then
-    get_docker_compose exec server ./manage.py $@
+    get_docker_compose exec server ./manage.py "$@"
 fi
 
 # TODO: ensure migrate runs on setup, not just update

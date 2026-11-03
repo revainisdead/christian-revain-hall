@@ -15,7 +15,8 @@ COMPOSE_0 := docker compose -f docker-compose.yml -f docker-compose.override.yml
 COMPOSE   := $(or $(COMPOSE_$(PROD)),docker compose)
 
 .DEFAULT_GOAL := help
-.PHONY: help dev rebuild-env setup up start stop down cleanup logs migrate makemigrations superuser create-game console shell lint
+.PHONY: help dev rebuild-env setup up start stop down cleanup logs migrate makemigrations superuser create-game console shell lint \
+        check flake8 pipcheck test e2e ci
 
 help: ## List targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -58,11 +59,13 @@ makemigrations: ## Generate Django migrations
 superuser: ## Create a Django superuser (interactive; run `make migrate` first)
 	$(SCRIPTS)/manage -u
 
-# Owner of games made by `make create-game`; defaults to your shell username.
-GAME_USER ?= $(USER)
+# `make create-game` options. GAME_USER defaults to your shell username.
+GAME_USER  ?= $(USER)
+GAME_COLOR ?= white
+GAME_MOVES ?=
 
-create-game: ## Create a starting-position chess game for GAME_USER (default: your shell user)
-	$(SCRIPTS)/manage create_chess_game $(GAME_USER)
+create-game: ## Create a local game: GAME_USER, GAME_COLOR=white|black, GAME_MOVES="e2e4 e7e5"
+	$(SCRIPTS)/manage seed_game $(GAME_USER) --color $(GAME_COLOR) $(if $(GAME_MOVES),--moves "$(GAME_MOVES)")
 
 console: ## Bash shell in the server container
 	$(SCRIPTS)/console
@@ -72,3 +75,25 @@ shell: ## Django shell in the server container
 
 lint: ## ESLint the client
 	$(SCRIPTS)/lint
+
+# --- Checks: run inside the running containers (start them with `make up` / `make dev`) ---
+
+SERVER := $(COMPOSE) exec server
+
+check: ## Django system check + fail on model changes without migrations
+	$(SERVER) ./manage.py check
+	$(SERVER) ./manage.py makemigrations --check --dry-run
+
+flake8: ## Lint the server (flake8, setup.cfg rules)
+	$(COMPOSE) exec -w /srv/app server flake8 server --config setup.cfg
+
+pipcheck: ## Verify installed Python packages have compatible dependencies
+	$(SERVER) pip check
+
+test: ## Server tests (pytest; uses a separate test database). Extra args: make test ARGS="-k stalemate"
+	$(SERVER) pytest $(ARGS)
+
+e2e: ## Playwright smoke test (chromium) against the running dev client
+	$(COMPOSE) exec -e BASE_URL=http://localhost:9000 client npx playwright test --project=chromium $(ARGS)
+
+ci: check flake8 pipcheck test lint ## Everything CI runs for the server, plus client lint

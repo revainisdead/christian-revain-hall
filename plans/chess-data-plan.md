@@ -1,6 +1,6 @@
 # Chess Data Plan
 
-Status: draft. Companion to [training-tool-plan.md](training-tool-plan.md).
+Status: implemented in `chess_local` (2026-11-03). Companion to [training-tool-plan.md](training-tool-plan.md).
 
 ## Recommendation
 
@@ -95,7 +95,7 @@ Notes:
   - `TrainingGrounds` (a one-to-one wrapper around the user that holds nothing) is dropped in favor of `Game.owner`. The user model still doesn't store games; they're a reverse relation (`user.games`).
   - The name "training" is reserved for the future `training` app.
   - `create_chess_game` becomes a `seed_game` command that creates a `Game` with a few moves.
-- **The data is test-only,** so the migration can be a fresh `0001_initial` for `chess_local` plus a dev-database reset.
+- **Migration:** `chess_local` `0002` removes the old piece models and creates `Game` and `Move`.
 
 ## API (DRF, all scoped to `request.user`)
 

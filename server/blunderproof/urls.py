@@ -1,48 +1,29 @@
-"""blunderproof URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
+"""blunderproof URL configuration: https://docs.djangoproject.com/en/5.2/topics/http/urls/"""
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework import routers
 
-from chess_local.views import TrainingGroundsViewSet
-
 from blunderproof.views import (
-    GroupsViewSet,
-    UsersViewSet,
     GroupsLinkViewSet,
+    GroupsViewSet,
     UsersLinkViewSet,
+    UsersViewSet,
 )
+from chess_local.views import GameViewSet
 
-from bank.urls import ROUTER_URLS
+accounts_router = routers.DefaultRouter()
+accounts_router.register(r"groups", GroupsViewSet)
+accounts_router.register(r"users", UsersViewSet)
+accounts_router.register(r"groups-link", GroupsLinkViewSet, basename="group-link")
+accounts_router.register(r"users-link", UsersLinkViewSet, basename="user-link")
 
-router = routers.DefaultRouter()
-router.register(r"groups", GroupsViewSet)
-router.register(r"users", UsersViewSet)
-router.register(r"groups-link", GroupsLinkViewSet)
-router.register(r"users-link", UsersLinkViewSet)
-
-chess_router = routers.DefaultRouter()
-chess_router.register(r"training_grounds", TrainingGroundsViewSet, basename="training_grounds")
+games_router = routers.DefaultRouter()
+games_router.register(r"games", GameViewSet, basename="game")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", include(chess_router.urls)),
-    path("api/accounts/", include(router.urls)),
-    path("bank-api/", include(ROUTER_URLS)),
+    path("api/", include(games_router.urls)),
+    path("api/auth/", include("accounts.urls")),
+    path("api/accounts/", include(accounts_router.urls)),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
 ]
-
-#urlpatterns += router.urls

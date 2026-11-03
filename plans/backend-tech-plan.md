@@ -1,10 +1,10 @@
 # Backend Tech Plan
 
-Status: draft. Concrete code requirements for the server, in order. Product behavior is in [training-tool-plan.md](training-tool-plan.md); the data design is in [chess-data-plan.md](chess-data-plan.md).
+Status: steps 1–6 implemented on `develop` (2026-11-03). Step 7 (Google sign-in) is next. Concrete code requirements for the server, in order. Product behavior is in [training-tool-plan.md](training-tool-plan.md); the data design is in [chess-data-plan.md](chess-data-plan.md).
 
 Each step should be its own branch or PR off `develop`, with CI green before merging.
 
-## Step 1: Upgrade the framework
+## Step 1: Upgrade the framework (done)
 
 The server runs Python 3.8 and Django 4.0.1, both past end of life. The auth libraries for later steps need a current Django.
 
@@ -40,7 +40,7 @@ The server runs Python 3.8 and Django 4.0.1, both past end of life. The auth lib
 - `make rebuild-env`, `make dev`, and `make migrate` work.
 - `manage.py check` is clean.
 
-## Step 2: Remove legacy apps
+## Step 2: Remove legacy apps (done)
 
 `bank`, `blog`, and `api` are unused.
 
@@ -53,7 +53,7 @@ The server runs Python 3.8 and Django 4.0.1, both past end of life. The auth lib
 
 **Done when:** `grep -rn "bank\|blog" server` returns nothing, and CI is green.
 
-## Step 3: Settings and session auth endpoints
+## Step 3: Settings and session auth endpoints (done)
 
 ### Settings
 
@@ -77,7 +77,7 @@ In prod, nginx must also proxy `/admin/`, `/api-auth/`, and `/static/`. Today it
 | POST | `/api/auth/register/` | `{username, email, password}`. Runs Django's password validators, creates the user, logs them in. Returns 201 with `me`. `AllowAny`. |
 | POST | `/api/auth/login/` | `{username, password}`. Returns 200 with `me`, or 400 on bad credentials. `AllowAny`. |
 | POST | `/api/auth/logout/` | Returns 204. |
-| GET | `/api/auth/me/` | `{id, username, email}`, or 403 when logged out. |
+| GET | `/api/auth/me/` | `{id, username, email}`, or 401 when logged out (JWT is the first auth class, so DRF answers 401). |
 
 **Requirements:**
 - Use `django.contrib.auth.authenticate`, `login`, and `logout`. No custom password handling.
@@ -91,7 +91,7 @@ In prod, nginx must also proxy `/admin/`, `/api-auth/`, and `/static/`. Today it
 - `me` both logged in and logged out,
 - logout.
 
-## Step 4: Games and moves (`chess_local`)
+## Step 4: Games and moves (`chess_local`) (done)
 
 This step implements [chess-data-plan.md](chess-data-plan.md).
 
@@ -100,7 +100,7 @@ This step implements [chess-data-plan.md](chess-data-plan.md).
 - Replace `ChPiece`, `ChPlayer`, `ChGame`, and `TrainingGrounds` with `Game` and `Move`, exactly as specified in the data plan:
   - `Game.owner`, `Game.user_color`, `start_fen`, status and result fields, timestamps,
   - `Move` with `UniqueConstraint(game, ply)`.
-- Delete the old migration and make a fresh `0001_initial`. Reset the dev database (test data only).
+- Add migration `0002` that drops the old tables and creates the new ones. The dev database keeps working without a reset.
 - Register both models in `chess_local/admin.py`, with moves shown inline on the game.
 
 ### Rules logic (`chess_local/services.py`)
@@ -154,12 +154,12 @@ def truncate_after(game: Game, ply: int) -> None:
   - checkmate (fool's mate) sets `BLACK_WON` / `checkmate`, and stalemate sets `DRAW`,
   - truncation deletes later moves and resets the status.
 - **API:**
-  - logged out returns 403,
+  - logged out returns 401,
   - another user's game returns 404,
   - the create, retrieve, append, and truncate flows work,
   - the error codes (400 and 409) are returned correctly.
 
-## Step 5: Testing and lint baseline
+## Step 5: Testing and lint baseline (done)
 
 - Switch the test runner to **pytest** (`pytest-django` is already a dependency).
   - Add a `pytest.ini` or `[tool:pytest]` `DJANGO_SETTINGS_MODULE = blunderproof.settings`.
@@ -168,7 +168,7 @@ def truncate_after(game: Game, ply: int) -> None:
 - Fix the existing flake8 findings, then make the CI flake8 step blocking (remove `continue-on-error`). Optionally replace flake8 with **ruff** (lint and format in one tool).
 - Coverage report in CI: informational, not a gate.
 
-## Step 6: JWT
+## Step 6: JWT (done)
 
 - Add `djangorestframework-simplejwt` with these endpoints:
   - `/api/auth/token/` (obtain),

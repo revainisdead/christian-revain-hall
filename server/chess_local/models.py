@@ -1,53 +1,50 @@
-from django.contrib.auth import get_user_model
+import chess
+from django.conf import settings
 from django.db import models
 
 
-User = get_user_model()
+class Game(models.Model):
+    """A local (same-screen) game: the owner plays both sides; `user_color` is "you"."""
+
+    class Color(models.TextChoices):
+        WHITE = "white", "White"
+        BLACK = "black", "Black"
+
+    class Status(models.TextChoices):
+        IN_PROGRESS = "in_progress", "In progress"
+        WHITE_WON = "white_won", "White won"
+        BLACK_WON = "black_won", "Black won"
+        DRAW = "draw", "Draw"
+
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="games", on_delete=models.CASCADE)
+    # Your color: decides board orientation and the attacker-count perspective.
+    user_color = models.CharField(max_length=5, choices=Color.choices, default=Color.WHITE)
+    title = models.CharField(max_length=100, blank=True)
+    start_fen = models.CharField(max_length=100, default=chess.STARTING_FEN)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.IN_PROGRESS)
+    # checkmate, stalemate, insufficient_material, threefold_repetition, ...
+    result_reason = models.CharField(max_length=30, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at"]
+
+    def __str__(self):
+        return self.title or f"Game {self.pk}"
 
 
-class ChPiece(models.Model):
-    player = models.ForeignKey('ChPlayer', related_name='pieces', on_delete=models.CASCADE)
+class Move(models.Model):
+    game = models.ForeignKey(Game, related_name="moves", on_delete=models.CASCADE)
+    ply = models.PositiveIntegerField()  # 1 = first move from start_fen
+    uci = models.CharField(max_length=5)  # e2e4, e7e8q
+    san = models.CharField(max_length=10)  # e4, exd5, O-O, e8=Q+
+    fen_after = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    class Roles(models.TextChoices):
-        PAWN = 'PAWN', 'Pawn'
-        ROOK = 'ROOK', 'Rook'
-        KNIGHT = 'KNIGHT', 'Knight'
-        BISHOP = 'BISHOP', 'Bishop'
-        QUEEN = 'QUEEN', 'Queen'
-        KING = 'KING', 'King'
+    class Meta:
+        ordering = ["ply"]
+        constraints = [models.UniqueConstraint(fields=["game", "ply"], name="unique_move_ply")]
 
-    role = models.CharField(max_length=20, choices=Roles.choices, default=Roles.PAWN)
-    position = models.CharField(max_length=2, blank=True, null=True)
-
-
-class ChPlayer(models.Model):
-    color = models.CharField(max_length=5)
-
-
-# user.games.white_player.pieces
-# user.games.black_player.pieces
-
-class ChGame(models.Model):
-    """
-    dont store all on user
-
-    training grounds
-    """
-    white_player = models.OneToOneField(ChPlayer, related_name='white_game', on_delete=models.CASCADE)
-    black_player = models.OneToOneField(ChPlayer, related_name='black_game', on_delete=models.CASCADE)
-
-    training_ground = models.ForeignKey('TrainingGrounds', related_name='games', on_delete=models.CASCADE)
-
-
-class TrainingGrounds(models.Model):
-    """
-    Has user as field and also has games
-
-    Allow connection between user and games without directly storing on user
-
-    /api/v1/training-grounds/1/games/1
-    /api/v1/training-grounds/{user_id}/games/{game_id}
-    """
-    user = models.OneToOneField(User, related_name='training_grounds', on_delete=models.CASCADE)
-
-    #profile = models.ForeignKey()
+    def __str__(self):
+        return f"{self.ply}. {self.san}"

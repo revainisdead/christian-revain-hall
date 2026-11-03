@@ -14,7 +14,15 @@ declare module '@vue/runtime-core' {
 // good idea to move this instance creation inside of the
 // "export default () => {}" function below (which runs individually
 // for each client)
-const api = axios.create({ baseURL: 'https://api.example.com' });
+// Same-origin API: the Quasar dev proxy (dev) and nginx (prod) forward /api to Django.
+// Session auth sends cookies; Django's CSRF token is read from the csrftoken cookie
+// (set by GET /api/auth/csrf/) and echoed back in the X-CSRFToken header.
+const api = axios.create({
+  baseURL: '/api',
+  withCredentials: true,
+  xsrfCookieName: 'csrftoken',
+  xsrfHeaderName: 'X-CSRFToken',
+});
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
