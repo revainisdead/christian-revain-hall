@@ -43,9 +43,10 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
 
 ## Commands
 
-Normal development happens in Docker:
+Normal development happens in Docker. `make help` lists shortcuts for `docker-scripts/` (`make dev`, `make rebuild-env`, `make logs`, ...); `PROD=1`/`PROD=0` work there too.
 
 ```bash
+make dev                          # setup --skip-install, start -d, follow logs
 docker-scripts/start              # docker compose up + follow logs (-d to detach)
 docker-scripts/migrate            # migrate; `migrate make` / `migrate show`
 docker compose exec server ./manage.py test

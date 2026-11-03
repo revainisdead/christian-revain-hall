@@ -16,6 +16,10 @@ Chess training tool. Never blunder again.
 ## Local development
 
 ```bash
+make help                   # list shortcuts (make dev, make rebuild-env, make logs, ...)
+make dev                    # build, start in background, follow logs
+
+# or call the scripts directly:
 docker-scripts/setup        # install Docker (Debian) and build images; --skip-install to just build
 docker-scripts/start        # start server, client, db
 docker-scripts/migrate      # run migrations (also: make | show)
