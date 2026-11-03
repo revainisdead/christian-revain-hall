@@ -44,6 +44,7 @@ jobs:
     env:
       DATABASE_URL: postgres://crhall:crhall@postgres:5432/crhall
       PIP_ROOT_USER_ACTION: ignore
+      SECRET_KEY: ci-only-not-secret
 
     defaults:
       run:

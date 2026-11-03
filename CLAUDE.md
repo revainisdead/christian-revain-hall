@@ -14,6 +14,7 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
 
 - `client/`: Quasar app (Vite, TypeScript, `<script setup>`)
   - `src/pages/IndexPage.vue`: currently hosts the board
+  - `src/components/ChessPiece.vue` keeps a `fileUrl` / `import.meta.url` reference line on purpose. Don't remove it.
   - `src/components/ChessBoard.vue`: 8x8 CSS grid; takes a `position` prop (`{ e4: 'w_pawn', ... }`), defaulting to the starting position
   - `src/components/BoardPiece.vue`: one board square (PNG background); `ChessPiece.vue`: one piece (PNG `<img>`)
   - `src/components/chessAssets.ts`: piece/position types, `startingPosition()`, and image path helpers
@@ -45,13 +46,15 @@ docker compose exec client npm run lint
 
 The host `client/node_modules` is a root-owned stub created by the container's anonymous volume. Don't `npm install` into it on the host. To run client tooling outside Docker, copy `client/` (without `node_modules`/`dist`) somewhere else and run `npm ci` there.
 
-Server without Docker (what CI does): `DATABASE_URL` is required, and sqlite works for quick checks:
+Config comes from the root `.env` (gitignored, loaded via `env_file`). `SECRET_KEY` is required; see `.env.example`.
+
+Server without Docker (what CI does): `SECRET_KEY` and `DATABASE_URL` are required, and sqlite works for quick checks:
 
 ```bash
 cd server
 pip-compile requirements.in -o requirements.txt && pip-compile dev-requirements.in -o dev-requirements.txt
 pip-sync requirements.txt dev-requirements.txt
-DATABASE_URL=sqlite:////tmp/bp.sqlite3 python manage.py test
+SECRET_KEY=dev DATABASE_URL=sqlite:////tmp/bp.sqlite3 python manage.py test
 ```
 
 ## Dependencies

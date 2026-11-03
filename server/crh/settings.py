@@ -14,6 +14,8 @@ import os
 
 import dj_database_url
 
+from django.core.exceptions import ImproperlyConfigured
+
 from pathlib import Path
 
 
@@ -28,7 +30,10 @@ APP_PATH = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)    # /s
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 
-SECRET_KEY = "LSMNDFHGNSKDHJTIMNWSREPGMHOPWSIDTFLQPXDMFNRNEKCKEJYJHSHMADJF"
+# Set in the root .env file (loaded by docker compose via env_file). See .env.example.
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    raise ImproperlyConfigured("SECRET_KEY environment variable is not set (add it to .env).")
 
 debug_env_var = os.environ.get("DEBUG", False)
 if debug_env_var == "true":

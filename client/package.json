@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "BlunderProof chess training tool",
   "productName": "BlunderProof",
-  "author": "Christian Hall <chall@incytestudios.com>",
+  "author": "revainisdead (https://github.com/revainisdead)",
   "private": true,
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue ./",

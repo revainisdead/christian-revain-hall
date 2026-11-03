@@ -14,6 +14,11 @@ interface Props {
   piece: PieceCode;
 }
 defineProps<Props>();
+
+// KEEP: reference for resolving a public/ asset URL via import.meta.url (not used for rendering).
+const fileUrl = new URL('/JohnPablok Cburnett Chess set/SVG No shadow/b_bishop_svg_NoShadow"', import.meta.url).href;
+
+console.log('file url test:', fileUrl)
 </script>
 
 <style>
