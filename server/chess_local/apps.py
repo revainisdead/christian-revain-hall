@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class ChessConfig(AppConfig):
+class ChessLocalConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'chess'
+    name = 'chess_local'

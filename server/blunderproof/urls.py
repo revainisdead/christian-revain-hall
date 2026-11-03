@@ -1,4 +1,4 @@
-"""crh URL Configuration
+"""blunderproof URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.0/topics/http/urls/
@@ -17,9 +17,9 @@ from django.contrib import admin
 from django.urls import include, path
 from rest_framework import routers
 
-from chess.views import TrainingGroundsViewSet
+from chess_local.views import TrainingGroundsViewSet
 
-from crh.views import (
+from blunderproof.views import (
     GroupsViewSet,
     UsersViewSet,
     GroupsLinkViewSet,

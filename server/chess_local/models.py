@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
 from django.db import models
 
 
@@ -7,7 +6,6 @@ User = get_user_model()
 
 
 class ChPiece(models.Model):
-    position = models.CharField(null=True, blank=True, max_length=10)
     player = models.ForeignKey('ChPlayer', related_name='pieces', on_delete=models.CASCADE)
 
     class Roles(models.TextChoices):
@@ -24,7 +22,6 @@ class ChPiece(models.Model):
 
 class ChPlayer(models.Model):
     color = models.CharField(max_length=5)
-
 
 
 # user.games.white_player.pieces
@@ -54,4 +51,3 @@ class TrainingGrounds(models.Model):
     user = models.OneToOneField(User, related_name='training_grounds', on_delete=models.CASCADE)
 
     #profile = models.ForeignKey()
-

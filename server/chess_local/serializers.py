@@ -1,7 +1,7 @@
 #from django.contrib.auth.models import Group, User
 from rest_framework import serializers
 
-from chess.models import TrainingGrounds, ChGame
+from chess_local.models import TrainingGrounds, ChGame
 
 
 #class UserLinkSerializer(serializers.HyperlinkedModelSerializer):

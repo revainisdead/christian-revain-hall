@@ -5,7 +5,7 @@ from django.contrib.auth.models import Group
 from django.conf import settings
 from rest_framework import permissions, viewsets
 
-from crh.serializers import (
+from blunderproof.serializers import (
     GroupSerializer,
     UserSerializer,
     GroupLinkSerializer,

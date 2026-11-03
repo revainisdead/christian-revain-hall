@@ -10,6 +10,11 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
 - Analysis and hints should only apply to positions BlunderProof generates itself (training exercises, games against the tool), or to games that have finished.
 - If a requested feature could work as live outside assistance, point that out before building it.
 
+## Plans
+
+- `docs/training-tool-plan.md`: the local board and its training tools (color choice, history navigation, move preview and arrows, attacker counts), auth, phases, and the future `training` campaign.
+- `docs/chess-data-plan.md`: storage design (Game → Move with FEN per move, no per-piece rows) and the games API.
+
 ## Layout
 
 - `client/`: Quasar app (Vite, TypeScript, `<script setup>`)
@@ -20,9 +25,12 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
   - `src/components/chessAssets.ts`: piece/position types, `startingPosition()`, and image path helpers
   - `src/components/ChessOverlay.vue`: transparent canvas over the board for arrows (`drawArrow('e2', 'e4')`)
   - `public/JohnPablok Cburnett Chess set/`: piece and square art (PNGs in several sizes, plus SVGs). The board uses `PNGs/With Shadow/128px` pieces and `PNGs/No shadow/128h` brown squares.
-- `server/`: Django project `crh` (settings, root URLs, user/group viewsets)
-  - `chess/`: `ChPiece`, `ChPlayer`, `ChGame`, `TrainingGrounds` (one per user; owns games). `management/commands/create_chess_game.py`
-  - `accounts/`, `api/`: app shells
+- `server/`: Django project `blunderproof` (settings, root URLs, user/group viewsets)
+  - `chess_local/`: local (same-screen) chess games. Current models are `ChPiece`, `ChPlayer`, `ChGame`, `TrainingGrounds`; `docs/chess-data-plan.md` replaces them with `Game`/`Move`. `manage.py create_chess_game <username>` seeds a starting-position game.
+  - `accounts/`: `BpUser` custom user model (`AUTH_USER_MODEL`)
+  - `api/`: app shell
+  - `training` (future): roguelike campaign against AI with achievements. Don't use that name for anything else.
+  - Don't name a Django app `chess`; it would shadow the python-chess package (`import chess`).
   - `bank/`, `blog/`: unused by BlunderProof and slated for removal. Don't build on them.
 - `docker-scripts/`: wrappers around `docker compose` (`setup`, `start`, `stop`, `migrate`, `manage`, `lint`, `npm`, `console`, ...). Run with `-h` for usage.
 - `dockerfiles/`: `Dockerfile-server` (Python 3.8), `Dockerfile-client` (Node 20 + Playwright Chromium), db, nginx.
@@ -39,7 +47,8 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
 
 - Client dev server: http://127.0.0.1:8007 (container port 9000)
 - Django: http://127.0.0.1:8008 (container port 8000)
-- API routes (`server/crh/urls.py`): `/api/training_grounds/`, `/api/accounts/{users,groups,...}/`, `/admin/`, `/api-auth/`
+- API routes (`server/blunderproof/urls.py`): `/api/training_grounds/`, `/api/accounts/{users,groups,...}/`, `/admin/`, `/api-auth/`
+- Auth: DRF requires login by default (`IsAuthenticated`). In dev, log in with a Django session via `/api-auth/login/` or `/admin/`. JWT and Google sign-in are planned.
 
 ## Commands
 
