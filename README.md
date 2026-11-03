@@ -1,26 +1,41 @@
 # BlunderProof
 
-- Chess training tool. Never blunder again.
+Chess training tool. Never blunder again.
 
+> **Fair play:** BlunderProof is for training only. Using it for assistance during any
+> live game, on Chess.com, Lichess, over the board, or anywhere else, is prohibited.
+> See [FAIR_PLAY.md](FAIR_PLAY.md).
 
-## social media badges
+## Stack
 
-Blog:               http://christian-revain-hall.com
+- **Client:** Vue 3 + Quasar (Vite, TypeScript), in `client/`
+- **Server:** Django + Django REST Framework, in `server/`
+- **Database:** PostgreSQL
+- **Dev environment:** Docker Compose (`docker-compose.yml`), with helper scripts in `docker-scripts/`
 
-GitHub:             https://github.com/revainisdead
+## Local development
 
-StackOverflow:      https://stackoverflow.com/users/6207208/revainisdead
+```bash
+docker-scripts/setup        # install Docker (Debian) and build images; --skip-install to just build
+docker-scripts/start        # start server, client, db
+docker-scripts/migrate      # run migrations (also: make | show)
+```
 
-LinkedIn:           https://linkedin.com/in/christianhall8
+- Client (Quasar dev server): http://127.0.0.1:8007
+- API (Django): http://127.0.0.1:8008
 
-Twitter:            https://twitter.com/revainisdead
+## Social
 
+- Blog: http://christian-revain-hall.com
+- GitHub: https://github.com/revainisdead
+- StackOverflow: https://stackoverflow.com/users/6207208/revainisdead
+- LinkedIn: https://linkedin.com/in/christianhall8
+- Twitter: https://twitter.com/revainisdead
 
-## Contact Me
+## Contact
 
 > christian-revain-hall@gmail.com
 
+## Credits
 
-## For Local Development
-
-URL:    http://127.0.0.1:8008
+Chess piece and board artwork: Cburnett chess set by JohnPablok (`client/public/JohnPablok Cburnett Chess set/`).

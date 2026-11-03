@@ -1,41 +1,27 @@
 <template>
   <div
-    class="board-piece"
-    :class="{ num: props.num, dark: isDarkSquare, light: !isDarkSquare }"
+    class="board-square"
+    :class="dark ? 'dark' : 'light'"
+    :data-square="name"
+    :style="{ backgroundImage: `url('${squareImage(dark)}')` }"
   >
+    <slot />
   </div>
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue';
+import { squareImage } from 'components/chessAssets';
 
-  interface Props {
-    num?: number;
-    dark: boolean;
-  }
-
-  const props = defineProps<Props>()
-
-  const isDarkSquare = computed(() => {
-    return props.dark === true;
-  });
-
-  console.log('board piece props test:', props)
+interface Props {
+  name: string;
+  dark: boolean;
+}
+defineProps<Props>();
 </script>
 
 <style>
-.board-piece {
-  width: 49px;
-  height: 49px;
+.board-square {
   position: relative;
-  display: inline-block;
-
-  margin: 0 0 0 0;
-}
-.board-piece.light {
-  background-color: #ad926c;
-}
-.board-piece.dark {
-  background-color: #452800;
+  background-size: cover;
 }
 </style>

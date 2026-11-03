@@ -1,8 +1,8 @@
 {
-  "name": "client",
+  "name": "blunderproof-client",
   "version": "0.0.1",
-  "description": " Portfolio and One Percent Growth",
-  "productName": " Christian Revain Hall",
+  "description": "BlunderProof chess training tool",
+  "productName": "BlunderProof",
   "author": "Christian Hall <chall@incytestudios.com>",
   "private": true,
   "scripts": {
