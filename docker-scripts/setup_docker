@@ -26,13 +26,9 @@ echo \
     sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 sudo apt-get update
-sudo apt-get install --yes docker-ce docker-ce-cli containerd.io
+sudo apt-get install --yes docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# Install Docker-compose
-# https://docs.docker.com/compose/install/
-sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-
-sudo chmod +x /usr/local/bin/docker-compose
+# Compose v2 comes from docker-compose-plugin above (`docker compose ...`); v1 (docker-compose 1.x) is not used.
 
 sudo usermod -aG docker $USER
-newgrp docker
+echo "Added $USER to the docker group: log out and back in (or run 'newgrp docker') to use docker without sudo."

@@ -6,9 +6,7 @@ services:
         environment:
             DEBUG: 'false'
         command: sh -c "./manage.py collectstatic --noinput && gunicorn blunderproof.wsgi:application --bind 0.0.0.0:8001"
-        ports:
-            # local:docker
-            - "8001:8001"
+        # Reachable only from nginx on the internal network; never published on the host.
         expose:
             - 8001
     client:
@@ -22,9 +20,8 @@ services:
         command: nginx -c /etc/nginx/nginx.conf -g 'daemon off;'
         working_dir: /srv/app/nginx
         ports:
-            - 80:80
-        expose:
-            - 80
+            - "80:80"
+            - "443:443"
         depends_on:
             client:
                 condition: service_completed_successfully
@@ -33,8 +30,24 @@ services:
         volumes:
             - "./client/dist/spa:/usr/share/nginx/html:ro"
             - "static-volume:/srv/app/static:ro"
+            - "letsencrypt:/etc/letsencrypt:ro"
+            - "certbot-www:/var/www/certbot:ro"
         networks:
             app_net:
                 ipv4_address: 172.32.1.4
                 aliases:
                     - crh-nginx-net
+    # Let's Encrypt client. Not started by `up` (profile); used via `make certs-issue` / `make certs-renew`.
+    certbot:
+        image: certbot/certbot:latest
+        profiles: ["tools"]
+        env_file: .env
+        volumes:
+            - "letsencrypt:/etc/letsencrypt"
+            - "certbot-www:/var/www/certbot"
+
+volumes:
+    letsencrypt:
+        name: christian-hall_letsencrypt
+    certbot-www:
+        name: christian-hall_certbot-www

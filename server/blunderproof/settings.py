@@ -46,6 +46,9 @@ PASSWORD_LOGIN_ENABLED = os.environ.get("PASSWORD_LOGIN_ENABLED", str(DEBUG)).lo
 # Google Identity Services OAuth client ID (Google Cloud console > Credentials). Empty = Google sign-in off.
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 
+# nginx terminates TLS and sets X-Forwarded-Proto; trust it so Django knows requests are https.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 

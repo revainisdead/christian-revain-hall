@@ -46,12 +46,12 @@ The aim is to deploy with the same commands as dev, plus `PROD=1` (or `COMPOSE_F
 
 ### Repo changes first (on `develop`, merged to `master`)
 
-- [ ] **Compose v2 plugin.** `docker-scripts/setup_docker` installs `docker-compose` **1.29** (v1). The compose files now use v2 features such as `condition: service_completed_successfully`. Install `docker-compose-plugin` from Docker's apt repo instead, and drop the `newgrp docker` line (it opens a subshell and stalls the script).
-- [ ] **Stop publishing internal ports in prod:**
+- [x] **Compose v2 plugin.** `docker-scripts/setup_docker` installs `docker-compose` **1.29** (v1). The compose files now use v2 features such as `condition: service_completed_successfully`. Install `docker-compose-plugin` from Docker's apt repo instead, and drop the `newgrp docker` line (it opens a subshell and stalls the script).
+- [x] **Stop publishing internal ports in prod:**
   - **Postgres:** the base file publishes `"0:5432"`, a random host port on every interface. Move it to `docker-compose.override.yml` (dev only).
   - **gunicorn:** the prod override publishes `8001:8001`, which bypasses nginx. Use only `expose: [8001]`, so nginx (on the internal network) is the only way in.
 - [ ] **Low memory.** The prod `client` service runs `npm run build` on the box, which can run out of memory on a 2 GB instance. Add swap on the box (below), or build `dist/spa` elsewhere (Stage 4).
-- [ ] **`make deploy`:** one command for the box: `git pull` + `make update` (rebuild, restart on the new images, migrate).
+- [x] **`make deploy`:** one command for the box: `git pull` + `make update` (rebuild, restart on the new images, migrate).
 
 ### On the box (first time)
 
@@ -94,19 +94,27 @@ make migrate
 
 ## Stage 2: HTTPS and hardening
 
-### HTTPS with Let's Encrypt
+### HTTPS with Let's Encrypt (built; see `nginx/`, `docker-compose.prod.yml`, Makefile `certs-*`)
 
-- Add a `certbot` service to `docker-compose.prod.yml`. It shares two volumes with nginx: `certbot-www` (the ACME challenge files) and `letsencrypt` (the certificates).
-- nginx config:
-  - `:80` serves `/.well-known/acme-challenge/` and redirects everything else to https.
-  - `:443` uses the certificate and holds today's `/`, `/api`, `/admin`, `/api-auth` and `/static/` locations.
-- First certificate:
-  ```bash
-  docker compose run --rm certbot certonly --webroot -w /var/www/certbot -d christian-revain-hall.com -d www.christian-revain-hall.com
-  ```
-- Renewal: a cron job runs `certbot renew`, then reloads nginx (`make renew-certs`).
-- Django: `SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")`. nginx already sends `X-Forwarded-Proto`.
-- Google console: add `https://christian-revain-hall.com` as an authorized JavaScript origin.
+How it fits together:
+- **First start:** nginx starts with a temporary self-signed certificate (`nginx/40-ssl-cert.sh`), so it can boot before the real one exists.
+- **`:80`** serves `/.well-known/acme-challenge/` from the `certbot-www` volume and 301s everything else to `https://christian-revain-hall.com`. `https://www` also 301s to the bare domain.
+- **The `certbot` service** (profile `tools`, never started by `up`) writes certificates to the `letsencrypt` volume. On restart, nginx links to them.
+- **Django** trusts nginx's `X-Forwarded-Proto` (`SECURE_PROXY_SSL_HEADER`).
+
+On the box, with the GoDaddy DNS records in place and the site up (`make dev`):
+
+```bash
+echo "LETSENCRYPT_EMAIL=you@example.com" >> .env
+make certs-test      # rehearsal against Let's Encrypt staging; must say "The dry run was successful."
+make certs-issue     # real certificate, then nginx restarts onto it
+crontab -e           # add: 17 3 * * * cd ~/blunderproof && make certs-renew >> ~/certs-renew.log 2>&1
+```
+
+Then in Google console add `https://christian-revain-hall.com` as an authorized JavaScript origin.
+
+Security group: inbound **443** must be open (as well as 80).
+
 - **Cost: free.** Let's Encrypt certificates are free and renew automatically every 60–90 days. Don't buy GoDaddy's SSL add-on. AWS's free certificates (ACM) only work behind a load balancer or CloudFront, which costs around $16+/month, so they're overkill for one box.
 - **`www`:** not required, but some people type it. Make the bare domain canonical and **301-redirect `www` to it**. That costs nothing: one GoDaddy DNS record, plus `www` on the same certificate.
 

@@ -15,8 +15,9 @@ COMPOSE_0 := docker compose -f docker-compose.yml -f docker-compose.override.yml
 COMPOSE   := $(or $(COMPOSE_$(PROD)),docker compose)
 
 .DEFAULT_GOAL := help
-.PHONY: help dev rebuild-env refresh-client-modules update setup up start stop restart restart-client restart-server down cleanup logs migrate makemigrations superuser seed create-game demo-game console shell lint \
-        check flake8 pipcheck test e2e ci
+.PHONY: help dev rebuild-env refresh-client-modules update deploy setup up start stop restart restart-client restart-server down cleanup logs migrate makemigrations superuser seed create-game demo-game console shell lint \
+        check flake8 pipcheck test e2e ci \
+        certs-test certs-issue certs-renew
 
 help: ## List targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -37,6 +38,10 @@ rebuild-env: ## Rebuild images and restart containers on them (setup --skip-inst
 
 refresh-client-modules: ## Drop the client container + node_modules volume (refilled from the image on next start)
 	bash -c 'source $(SCRIPTS)/utils && refresh_client_modules'
+
+deploy: ## PROD box: pull the current branch, then make update (rebuild, restart on new images, migrate)
+	git pull --ff-only
+	$(MAKE) --no-print-directory update
 
 update: ## Pull newer base images, rebuild, restart on them, migrate. Safe while running; keeps data
 	$(SCRIPTS)/update --skip-cleanup
@@ -125,3 +130,21 @@ e2e: ## Playwright tests (chromium) against a fresh production build, like CI. E
 	$(COMPOSE) exec client sh -c "npm run build && npx playwright test --project=chromium $(ARGS)"
 
 ci: check flake8 pipcheck test lint ## Everything CI runs for the server, plus client lint
+
+# --- HTTPS (prod box; COMPOSE_FILE in .env selects the prod files). Email: LETSENCRYPT_EMAIL in .env ---
+
+CERT_DOMAINS := -d christian-revain-hall.com -d www.christian-revain-hall.com
+CERTBOT = $(COMPOSE) run --rm --entrypoint sh certbot -c \
+	'[ -n "$$LETSENCRYPT_EMAIL" ] || { echo "Set LETSENCRYPT_EMAIL in .env"; exit 1; }; certbot $(1)'
+
+certs-test: ## PROD: rehearse getting the certificate (Let's Encrypt staging, nothing saved). Run first
+	$(call CERTBOT,certonly --dry-run --webroot -w /var/www/certbot $(CERT_DOMAINS) --email "$$LETSENCRYPT_EMAIL" --agree-tos --no-eff-email --non-interactive)
+
+certs-issue: ## PROD: get the real Let's Encrypt certificate, then restart nginx onto it
+	$(call CERTBOT,certonly --webroot -w /var/www/certbot $(CERT_DOMAINS) --email "$$LETSENCRYPT_EMAIL" --agree-tos --no-eff-email --non-interactive)
+	$(COMPOSE) restart nginx
+
+certs-renew: ## PROD: renew if due (cron this daily), then reload nginx
+	$(call CERTBOT,renew --webroot -w /var/www/certbot --non-interactive)
+	$(COMPOSE) exec nginx nginx -s reload
+

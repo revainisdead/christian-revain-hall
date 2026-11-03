@@ -13,3 +13,6 @@ services:
             - "8007:9000"
     db:
         env_file: .env
+        ports:
+            # Dev only: random host port for local psql/GUI tools (`docker compose port db 5432`).
+            - "0:5432"
