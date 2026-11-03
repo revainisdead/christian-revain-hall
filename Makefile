@@ -15,7 +15,7 @@ COMPOSE_0 := docker compose -f docker-compose.yml -f docker-compose.override.yml
 COMPOSE   := $(or $(COMPOSE_$(PROD)),docker compose)
 
 .DEFAULT_GOAL := help
-.PHONY: help dev rebuild-env setup up start stop down cleanup logs migrate makemigrations console shell lint
+.PHONY: help dev rebuild-env setup up start stop down cleanup logs migrate makemigrations superuser create-game console shell lint
 
 help: ## List targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -54,6 +54,15 @@ migrate: ## Run Django migrations
 
 makemigrations: ## Generate Django migrations
 	$(SCRIPTS)/migrate make
+
+superuser: ## Create a Django superuser (interactive; run `make migrate` first)
+	$(SCRIPTS)/manage -u
+
+# Owner of games made by `make create-game`; defaults to your shell username.
+GAME_USER ?= $(USER)
+
+create-game: ## Create a starting-position chess game for GAME_USER (default: your shell user)
+	$(SCRIPTS)/manage create_chess_game $(GAME_USER)
 
 console: ## Bash shell in the server container
 	$(SCRIPTS)/console

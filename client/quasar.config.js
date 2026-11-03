@@ -109,8 +109,9 @@ module.exports = configure(function (ctx) {
       // https: true
       open: false, // *Docker: change to false* opens browser window automatically
       proxy: {
+        // Target is host only: the proxy appends the full request path (/api/...).
         '/api': {
-            target: 'http://crh-server-net:8000/api',
+            target: 'http://crh-server-net:8000',
             changeOrigin: true,
             //rewrite: (path) => path.replace(/^\/api/, "")
         },

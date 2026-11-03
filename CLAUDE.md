@@ -12,8 +12,9 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
 
 ## Plans
 
-- `docs/training-tool-plan.md`: the local board and its training tools (color choice, history navigation, move preview and arrows, attacker counts), auth, phases, and the future `training` campaign.
-- `docs/chess-data-plan.md`: storage design (Game → Move with FEN per move, no per-piece rows) and the games API.
+- `plans/training-tool-plan.md`: the local board and its training tools (color choice, history navigation, move preview and arrows, attacker counts), auth, phases, and the future `training` campaign.
+- `plans/chess-data-plan.md`: storage design (Game → Move with FEN per move, no per-piece rows) and the games API.
+- `plans/backend-tech-plan.md`: ordered backend work with code requirements (framework upgrade, legacy app removal, auth endpoints, games/moves API, tests, JWT, Google).
 
 ## Layout
 
@@ -26,7 +27,7 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
   - `src/components/ChessOverlay.vue`: transparent canvas over the board for arrows (`drawArrow('e2', 'e4')`)
   - `public/JohnPablok Cburnett Chess set/`: piece and square art (PNGs in several sizes, plus SVGs). The board uses `PNGs/With Shadow/128px` pieces and `PNGs/No shadow/128h` brown squares.
 - `server/`: Django project `blunderproof` (settings, root URLs, user/group viewsets)
-  - `chess_local/`: local (same-screen) chess games. Current models are `ChPiece`, `ChPlayer`, `ChGame`, `TrainingGrounds`; `docs/chess-data-plan.md` replaces them with `Game`/`Move`. `manage.py create_chess_game <username>` seeds a starting-position game.
+  - `chess_local/`: local (same-screen) chess games. Current models are `ChPiece`, `ChPlayer`, `ChGame`, `TrainingGrounds`; `plans/chess-data-plan.md` replaces them with `Game`/`Move`. `manage.py create_chess_game <username>` seeds a starting-position game.
   - `accounts/`: `BpUser` custom user model (`AUTH_USER_MODEL`)
   - `api/`: app shell
   - `training` (future): roguelike campaign against AI with achievements. Don't use that name for anything else.
