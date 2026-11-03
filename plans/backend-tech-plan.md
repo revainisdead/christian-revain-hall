@@ -1,6 +1,6 @@
 # Backend Tech Plan
 
-Status: steps 1–6 implemented on `develop` (2026-11-03). Step 7 (Google sign-in) is next. Concrete code requirements for the server, in order. Product behavior is in [training-tool-plan.md](training-tool-plan.md); the data design is in [chess-data-plan.md](chess-data-plan.md).
+Status: steps 1–7 implemented on `develop` (2026-11-03). Concrete code requirements for the server, in order. Product behavior is in [training-tool-plan.md](training-tool-plan.md); the data design is in [chess-data-plan.md](chess-data-plan.md).
 
 Each step should be its own branch or PR off `develop`, with CI green before merging.
 
@@ -180,14 +180,14 @@ def truncate_after(game: Game, ply: int) -> None:
 - `DEFAULT_AUTHENTICATION_CLASSES`: JWT first, session second, so the admin and the browsable API keep working.
 - Decide where the client keeps tokens: memory plus an httpOnly refresh cookie (preferred), or `localStorage`.
 
-## Step 7: Google sign-in
+## Step 7: Google sign-in (done)
 
 - The client gets a Google ID token from Google Identity Services.
 - `POST /api/auth/google/` with `{credential}`:
   1. The server verifies the token (audience = our client ID, issuer = Google).
   2. It finds or creates the user by verified email.
-  3. It returns our JWT pair.
-- The library is still open: `django-allauth` + `dj-rest-auth` (more features), or `google-auth` verification only (smaller).
+  3. It logs the user in with a session, the same as the dev login. A JWT pair could be returned later for non-browser clients.
+- Library: `google-auth` verification only (`id_token.verify_oauth2_token`). Users link by `BpUser.google_sub`, falling back to verified email.
 - Store `GOOGLE_CLIENT_ID` in `.env` and `.env.example`.
 
 ## Later

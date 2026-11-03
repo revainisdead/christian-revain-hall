@@ -39,6 +39,13 @@ CSRF_TRUSTED_ORIGINS = env_list(
     "http://127.0.0.1:8007,http://localhost:8007" if DEBUG else "",
 )
 
+# Username/password login (session login, register, JWT token obtain). Dev only by default;
+# real users sign in with Google.
+PASSWORD_LOGIN_ENABLED = os.environ.get("PASSWORD_LOGIN_ENABLED", str(DEBUG)).lower() == "true"
+
+# Google Identity Services OAuth client ID (Google Cloud console > Credentials). Empty = Google sign-in off.
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 

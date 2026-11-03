@@ -30,7 +30,7 @@ while [[ $# -gt 0 ]]; do
             skip_cleanup=1
             ;;
         -h|--help|?)
-            echo "Update environment and packages, by running cleanup and then building. Also migrates."
+            echo "Rebuild images with updated packages, restart services on them (stack stays up), migrate. Optional cleanup first."
             echo
             cecho "Usage: $(basename $0) <options> <SERVICE>]" default bold
             echo
@@ -57,7 +57,8 @@ set -- "${POSITIONAL[@]}"
 
 # Default to development environment
 
-if [ ! "$no_input" ]; then
+# Only cleanup is destructive, so only ask when it will run.
+if [ ! "$skip_cleanup" ] && [ ! "$no_input" ]; then
     cecho "This will delete many files and volumes and may be destructive to work in progress." yellow bold
     read -n1 -r -p "Press 'Y' to continue or any other key to cancel..." key
     echo
@@ -66,9 +67,6 @@ if [ ! "$no_input" ]; then
         cecho "Aborting." red
         exit 0
     fi
-else
-    cecho "Skipping user input prompt." green
-    cecho "'--no-input' argument provided." green
 fi
 
 if [ ! "$skip_cleanup" ]; then
@@ -79,11 +77,16 @@ else
 fi
 
 echo
-cecho "Rebuilding environment..." default bold
-docker_compose build
+cecho "Rebuilding images (pulling newer base images)..." default bold
+docker_compose build --pull
+
+# Recreate containers whose image changed, with a fresh client node_modules volume from the new image.
+# Named data volumes (database, static) are kept.
+echo
+cecho "Restarting services on the new images..." default bold
+refresh_client_modules
+$SCRIPT_BASE/start -d
 
 echo
 cecho "Running database migrations..." default bold
-$SCRIPT_BASE/start -d server db
 $SCRIPT_BASE/migrate
-$SCRIPT_BASE/stop

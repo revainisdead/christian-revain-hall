@@ -7,6 +7,12 @@ User = get_user_model()
 PASSWORD = "a-Strong-pass-123"
 
 
+@pytest.fixture(autouse=True)
+def password_login_on(settings):
+    # The container sets DEBUG=true (which enables it) but CI doesn't; pin it for these tests.
+    settings.PASSWORD_LOGIN_ENABLED = True
+
+
 @pytest.fixture
 def client():
     return APIClient()
@@ -108,3 +114,24 @@ def test_user_admin_endpoints_are_staff_only(client, user):
     user.save()
     assert client.get("/api/accounts/users/").status_code == 200
     assert client.get("/api/accounts/users-link/").status_code == 200
+
+
+@pytest.mark.django_db
+def test_password_login_can_be_disabled(client, user, settings):
+    settings.PASSWORD_LOGIN_ENABLED = False
+    creds = {"username": "alice", "password": PASSWORD}
+    assert client.post(reverse("auth-login"), creds).status_code == 404
+    assert client.post(reverse("token-obtain"), creds).status_code == 404
+    assert client.post(
+        reverse("auth-register"), {**creds, "username": "bob", "email": "b@example.com"}
+    ).status_code == 404
+
+
+def test_config(client, settings):
+    settings.GOOGLE_CLIENT_ID = "abc.apps.googleusercontent.com"
+    assert client.get(reverse("auth-config")).data == {
+        "password_login": True,
+        "google_client_id": "abc.apps.googleusercontent.com",
+    }
+    settings.GOOGLE_CLIENT_ID = ""
+    assert client.get(reverse("auth-config")).data["google_client_id"] is None

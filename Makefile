@@ -15,24 +15,36 @@ COMPOSE_0 := docker compose -f docker-compose.yml -f docker-compose.override.yml
 COMPOSE   := $(or $(COMPOSE_$(PROD)),docker compose)
 
 .DEFAULT_GOAL := help
-.PHONY: help dev rebuild-env setup up start stop down cleanup logs migrate makemigrations superuser create-game console shell lint \
+.PHONY: help dev rebuild-env refresh-client-modules update setup up start stop restart restart-client restart-server down cleanup logs migrate makemigrations superuser seed create-game demo-game console shell lint \
         check flake8 pipcheck test e2e ci
 
 help: ## List targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
 
-dev: ## Build images, start everything in the background, follow the last 20 log lines
+# After a build, refresh-client-modules drops the client container + its node_modules volume so the
+# start that follows refills it from the new image. Data volumes (database, static) are never touched.
+
+dev: ## Build images, (re)start everything on them in the background, follow the last 20 log lines
 	$(SCRIPTS)/setup --skip-install
+	@$(MAKE) --no-print-directory refresh-client-modules
 	$(SCRIPTS)/start -d
 	$(COMPOSE) logs -f --tail 20
 
-rebuild-env: ## Rebuild images only (setup --skip-install --skip-db)
+rebuild-env: ## Rebuild images and restart containers on them (setup --skip-install --skip-db)
 	$(SCRIPTS)/setup --skip-install --skip-db
+	@$(MAKE) --no-print-directory refresh-client-modules
+	$(SCRIPTS)/start -d
+
+refresh-client-modules: ## Drop the client container + node_modules volume (refilled from the image on next start)
+	bash -c 'source $(SCRIPTS)/utils && refresh_client_modules'
+
+update: ## Pull newer base images, rebuild, restart on them, migrate. Safe while running; keeps data
+	$(SCRIPTS)/update --skip-cleanup
 
 setup: ## First-time machine setup: installs Docker via apt/sudo, then builds
 	$(SCRIPTS)/setup
 
-up: ## Start everything in the background
+up: ## Start everything in the background (recreates containers whose image or .env changed)
 	$(SCRIPTS)/start -d
 
 start: ## Start everything and follow logs in the foreground
@@ -40,6 +52,15 @@ start: ## Start everything and follow logs in the foreground
 
 stop: ## Stop all containers (they still exist and hold their volumes)
 	$(SCRIPTS)/stop
+
+restart: ## Restart all containers as-is (after editing .env use `make up`, which recreates them)
+	$(COMPOSE) restart
+
+restart-client: ## Restart the client dev server (e.g. Vite gets stuck on new files)
+	$(COMPOSE) restart client
+
+restart-server: ## Restart the Django server
+	$(COMPOSE) restart server
 
 down: ## Stop and remove containers + network (named volumes are kept)
 	$(COMPOSE) down --remove-orphans
@@ -59,6 +80,10 @@ makemigrations: ## Generate Django migrations
 superuser: ## Create a Django superuser (interactive; run `make migrate` first)
 	$(SCRIPTS)/manage -u
 
+seed: ## DEV: superuser $(USER) / password 'a' (or $$DEV_USER_PASSWORD) + the demo game
+	$(SCRIPTS)/manage seed_dev_user $(GAME_USER) --email $(GAME_USER)@example.com
+	$(MAKE) demo-game
+
 # `make create-game` options. GAME_USER defaults to your shell username.
 GAME_USER  ?= $(USER)
 GAME_COLOR ?= white
@@ -66,6 +91,9 @@ GAME_MOVES ?=
 
 create-game: ## Create a local game: GAME_USER, GAME_COLOR=white|black, GAME_MOVES="e2e4 e7e5"
 	$(SCRIPTS)/manage seed_game $(GAME_USER) --color $(GAME_COLOR) $(if $(GAME_MOVES),--moves "$(GAME_MOVES)")
+
+demo-game: ## Create a ready-made game for you: Sicilian as Black (1.e4 c5 2.Nf3 d6)
+	$(SCRIPTS)/manage seed_game $(GAME_USER) --color black --moves "e2e4 c7c5 g1f3 d7d6" --title "Sicilian demo"
 
 console: ## Bash shell in the server container
 	$(SCRIPTS)/console
@@ -93,7 +121,7 @@ pipcheck: ## Verify installed Python packages have compatible dependencies
 test: ## Server tests (pytest; uses a separate test database). Extra args: make test ARGS="-k stalemate"
 	$(SERVER) pytest $(ARGS)
 
-e2e: ## Playwright smoke test (chromium) against the running dev client
-	$(COMPOSE) exec -e BASE_URL=http://localhost:9000 client npx playwright test --project=chromium $(ARGS)
+e2e: ## Playwright tests (chromium) against a fresh production build, like CI. Extra args: ARGS=...
+	$(COMPOSE) exec client sh -c "npm run build && npx playwright test --project=chromium $(ARGS)"
 
 ci: check flake8 pipcheck test lint ## Everything CI runs for the server, plus client lint

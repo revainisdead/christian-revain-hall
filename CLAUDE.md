@@ -19,6 +19,10 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
 ## Layout
 
 - `client/`: Quasar app (Vite, TypeScript, `<script setup>`)
+  - `src/pages/LoginPage.vue` (`/#/login`): a dev-only username/password box (shown when the server's `PASSWORD_LOGIN_ENABLED`) and a Google sign-in box (Google Identity Services, when `GOOGLE_CLIENT_ID` is set). The page reads both from `GET /api/auth/config/`.
+  - `src/router/index.ts`: a guard sends logged-out users to `/login`. Routes are login-only unless `meta.public`.
+  - `src/stores/auth.ts`: Pinia auth store (`fetchMe`, `login`, `googleLogin`, `logout`); session cookies plus CSRF.
+  - Stores live in `src/stores/`, and `quasar.config.js` sets `sourceFiles.store: 'src/stores/index'`. Without it Quasar 1.x looks for `src/store/` and never installs Pinia. The router guard calls `useAuthStore(store)` with the instance Quasar passes in.
   - `src/pages/IndexPage.vue`: currently hosts the board
   - `src/components/ChessPiece.vue` keeps a `fileUrl` / `import.meta.url` reference line on purpose. Don't remove it.
   - `src/components/ChessBoard.vue`: 8x8 CSS grid; takes a `position` prop (`{ e4: 'w_pawn', ... }`), defaulting to the starting position
@@ -51,9 +55,11 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
 - Django: http://127.0.0.1:8008 (container port 8000)
 - API routes (`server/blunderproof/urls.py`):
   - `/api/games/` and `/api/games/{id}/moves/`: POST `{uci, ply}`; DELETE `?after=<ply>`
-  - `/api/auth/{csrf,register,login,logout,me}/` (session) and `/api/auth/token/{,refresh/,blacklist/}` (JWT)
+  - `/api/auth/{config,csrf,google,register,login,logout,me}/` (session) and `/api/auth/token/{,refresh/,blacklist/}` (JWT)
+  - Password endpoints (`login`, `register`, `token`) return 404 unless `PASSWORD_LOGIN_ENABLED`, which defaults to DEBUG.
+  - `google` verifies the ID token against `GOOGLE_CLIENT_ID`, finds the user by `BpUser.google_sub` (or links by verified email, or creates one), and starts a session.
   - `/api/accounts/{users,groups,...}/` (staff only), `/admin/`, `/api-auth/`
-- Auth: DRF requires login by default (`IsAuthenticated`). Logged-out requests get **401**, because JWT is the first auth class. Querysets are scoped to `request.user`, so other users' objects return 404. Google sign-in is planned (`plans/backend-tech-plan.md`, step 7).
+- Auth: DRF requires login by default (`IsAuthenticated`). Logged-out requests get **401**, because JWT is the first auth class. Querysets are scoped to `request.user`, so other users' objects return 404. Real users sign in with Google; username/password is for dev.
 - The client uses the axios `api` instance in `client/src/boot/axios.ts`: same-origin `/api`, cookies, and the CSRF header.
 
 ## Commands
@@ -61,14 +67,23 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
 Normal development happens in Docker. `make help` lists shortcuts for `docker-scripts/` (`make dev`, `make rebuild-env`, `make logs`, ...); `PROD=1`/`PROD=0` work there too.
 
 ```bash
-make dev                          # setup --skip-install, start -d, follow logs
+make dev                          # build, (re)start on the new images, follow logs
+make update                       # pull + rebuild + restart on new images + migrate; safe while running, keeps data
+make rebuild-env                  # rebuild + restart on new images (no pull, no migrate)
+make seed                         # DEV: superuser $USER / password `a` + the demo game
+make restart-client               # e.g. Vite stuck on newly created files; .env changes need `make up` instead
 make migrate / make makemigrations
 make ci                           # check + flake8 + pipcheck + test + client lint (in running containers)
 make test ARGS="-k stalemate"     # pytest in the server container (separate test database)
-make e2e                          # Playwright smoke test against the running dev client
+make e2e                          # Playwright on a fresh production build in the client container, like CI (auth API mocked in tests/mockApi.ts)
+make demo-game                    # ready-made game for you (Sicilian as Black); make create-game for custom
 ```
 
-Checks (`check`, `flake8`, `pipcheck`, `test`, `lint`, `e2e`) run inside the running containers. After changing `requirements*.in` or a Dockerfile, rebuild the image (`make rebuild-env && make up`) before running them.
+Checks (`check`, `flake8`, `pipcheck`, `test`, `lint`, `e2e`) run inside the running containers. After changing `requirements*.in`, `package.json` or a Dockerfile, run `make update` (or `make dev`) before running them. A build alone doesn't change running containers.
+
+Volumes are all named: `christian-hall_db-volume` (mounted at Postgres's data dir, which contains PGDATA), `christian-hall_static-volume`, and `christian-hall_client-node-modules`. After a build, `refresh_client_modules` (in `docker-scripts/utils`; also `make refresh-client-modules`) deletes the client container and its node_modules volume so the next start refills it from the new image. Never let the database live in an anonymous volume.
+
+Don't run Playwright against the Vite dev server from inside the client container. Its HMR socket points at host port 8007, and inside the container that makes Vite reload the page every second.
 
 The host `client/node_modules` is a root-owned stub created by the container's anonymous volume. Don't `npm install` into it on the host. To run client tooling outside Docker, copy `client/` (without `node_modules`/`dist`) somewhere else and run `npm ci` there.
 

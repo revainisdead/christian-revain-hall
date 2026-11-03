@@ -15,7 +15,16 @@
           BlunderProof
         </q-toolbar-title>
 
-        <div>Quasar v{{ $q.version }}</div>
+        <div v-if="auth.user" class="row items-center q-gutter-x-sm">
+          <span data-testid="current-user">{{ auth.user.username }}</span>
+          <q-btn
+            flat
+            dense
+            icon="logout"
+            label="Log out"
+            @click="logout"
+          />
+        </div>
       </q-toolbar>
     </q-header>
 
@@ -47,7 +56,17 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import EssentialLink from 'components/EssentialLink.vue';
+import { useAuthStore } from 'stores/auth';
+
+const auth = useAuthStore();
+const router = useRouter();
+
+async function logout() {
+  await auth.logout();
+  await router.replace({ name: 'login' });
+}
 
 const essentialLinks = [
   {

@@ -7,6 +7,7 @@ import {
 } from 'vue-router';
 
 import routes from './routes';
+import { useAuthStore } from 'stores/auth';
 
 /*
  * If not building with SSR mode, you can
@@ -17,7 +18,7 @@ import routes from './routes';
  * with the Router instance.
  */
 
-export default route(function (/* { store, ssrContext } */) {
+export default route(function ({ store }) {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
     : (process.env.VUE_ROUTER_MODE === 'history' ? createWebHistory : createWebHashHistory);
@@ -30,6 +31,19 @@ export default route(function (/* { store, ssrContext } */) {
     // quasar.conf.js -> build -> vueRouterMode
     // quasar.conf.js -> build -> publicPath
     history: createHistory(process.env.VUE_ROUTER_BASE),
+  });
+
+  // Send logged-out users to /login (and logged-in users away from it).
+  Router.beforeEach(async (to) => {
+    // Pass Quasar's Pinia explicitly (quasar.config sourceFiles.store); guards can run before it's active.
+    const auth = useAuthStore(store);
+    if (!auth.checked) {
+      await auth.fetchMe();
+    }
+    if (to.meta.public) {
+      return to.name === 'login' && auth.isLoggedIn ? { name: 'home' } : true;
+    }
+    return auth.isLoggedIn ? true : { name: 'login', query: { next: to.fullPath } };
   });
 
   return Router;

@@ -212,3 +212,11 @@ docker_compose() {
         *) get_docker_compose "$@" ;;
     esac
 }
+
+# After rebuilding the client image, drop the client container and its node_modules volume so the
+# next start refills the volume from the new image (new/updated npm packages). Data volumes untouched.
+refresh_client_modules() {
+    docker_compose rm --stop --force client
+    docker volume rm --force christian-hall_client-node-modules >/dev/null
+}
+

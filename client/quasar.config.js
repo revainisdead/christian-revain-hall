@@ -146,6 +146,10 @@ module.exports = configure(function (ctx) {
     animations: [],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#sourcefiles
+    // Quasar app-vite 1.x defaults the store to src/store/index (singular); ours is src/stores/.
+    sourceFiles: {
+      store: 'src/stores/index',
+    },
     // sourceFiles: {
     //   rootComponent: 'src/App.vue',
     //   router: 'src/router/index',

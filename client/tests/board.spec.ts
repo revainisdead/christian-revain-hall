@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
+import { mockAuthApi } from './mockApi';
 
 test('board renders the starting position', async ({ page }) => {
+  await mockAuthApi(page, { loggedIn: true });
   await page.goto('/');
 
   await expect(page).toHaveTitle(/BlunderProof/);
