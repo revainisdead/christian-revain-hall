@@ -3,12 +3,10 @@
 set -e
 SCRIPT_BASE=$(dirname "$0")
 
-echo Script Base: $SCRIPT_BASE
 
 source $SCRIPT_BASE/utils
 
 ROOT=$(resolve_path "$SCRIPT_BASE/..")
-echo root path: $ROOT
 
 
 target=server
@@ -36,7 +34,6 @@ done
 set -- "${POSITIONAL[@]}"
 
 # Default to development environment
-PROD=${PROD:-0}
 
 if [ "$1" ]; then
     echo First arg received: "$1"

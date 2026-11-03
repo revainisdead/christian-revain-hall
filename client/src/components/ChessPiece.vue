@@ -1,39 +1,33 @@
-
 <template>
-  <div
-    class="board-piece chess-piece"
+  <img
+    class="chess-piece"
+    :src="pieceImage(piece)"
+    :alt="piece"
+    draggable="false"
   >
-  <img src="/JohnPablok Cburnett Chess set/SVG No shadow/b_bishop_svg_NoShadow.svg">
-
-  </div>
 </template>
 
-
 <script setup lang="ts">
-//b_bishop_svg_NoShadow
+import { PieceCode, pieceImage } from 'components/chessAssets';
 
+interface Props {
+  piece: PieceCode;
+}
+defineProps<Props>();
 
+// KEEP: reference for resolving a public/ asset URL via import.meta.url (not used for rendering).
 const fileUrl = new URL('/JohnPablok Cburnett Chess set/SVG No shadow/b_bishop_svg_NoShadow"', import.meta.url).href;
 
 console.log('file url test:', fileUrl)
 </script>
 
 <style>
-.board-piece {
-  width: 49px;
-  height: 49px;
-  position: relative;
-  display: inline-block;
-  margin: 0 0 0 0;
-}
-
 .chess-piece {
-  width: 45px;
-  height: 45px;
-  display: inline-block;
-  margin: 2px 2px 2px 2px;
-
   position: absolute;
-  z-index: 9991;
+  inset: 4%;
+  width: 92%;
+  height: 92%;
+  object-fit: contain;
+  user-select: none;
 }
 </style>

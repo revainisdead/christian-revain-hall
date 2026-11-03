@@ -10,14 +10,12 @@ set -e
 # dirname $0: This transforms a path such as "./docker-scripts/install" into "install" (or "install" into ".")
 #
 SCRIPT_BASE=$(dirname "$0")
-echo Script Base: $SCRIPT_BASE
 
 # This import requires the script be ran at project root.
 source $SCRIPT_BASE/utils
 
 # Successfully goes up one directory to project root with util function
 ROOT=$(resolve_path "$SCRIPT_BASE/..")
-echo testing relative paths to absolute: $ROOT
 
 POSITIONAL=()
 
@@ -45,8 +43,8 @@ while [[ $# -gt 0 ]]; do
             echo "  -h  --help          This help message"
             echo
             echo "Environment Variables:"
-            echo "  PROD=0              Development setup: docker-compose.yml (default)"
-            echo "  PROD=1              Production setup: docker-compose-prod.yml"
+            echo "  PROD=0              Force dev compose files (default: COMPOSE_FILE, else dev)"
+            echo "  PROD=1              Force prod: docker-compose.yml + docker-compose.prod.yml"
             exit 0
             ;;
         *)
@@ -73,14 +71,8 @@ done
 set -- "${POSITIONAL[@]}"
 
 # Default to development environment
-PROD=${PROD:-0}
 
-echo ARG0 test $0
-echo ARG1 test $1
-echo ARG2 test $2
-echo ARG3 test $3
 # access values in array: ${array[@]}
-echo Set test "${POSITIONAL[@]}"
 
 if [ ! "$skip_install" ]; then
     case $(detect_platform) in

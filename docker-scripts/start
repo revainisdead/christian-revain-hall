@@ -25,8 +25,8 @@ while [[ $# -gt 0 ]]; do
             echo "  -h  --help          This help message"
             echo
             echo "Environment Variables:"
-            echo "  PROD=0              Development setup: docker-compose.yml (default)"
-            echo "  PROD=1              Production setup: docker-compose-prod.yml"
+            echo "  PROD=0              Force dev compose files (default: COMPOSE_FILE, else dev)"
+            echo "  PROD=1              Force prod: docker-compose.yml + docker-compose.prod.yml"
             echo
             echo "Run 'docker-compose up --help' to see more options"
             exit 0
@@ -40,7 +40,6 @@ done
 set -- "${POSITIONAL[@]}"
 
 # Default to development environment
-PROD=${PROD:-0}
 
 #if [ ! "$(docker network ls | grep crh-net)" ]; then
 #    cecho "Shared network not found, creating..." yellow bold

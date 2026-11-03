@@ -1,0 +1,15 @@
+# Development overrides. Loaded automatically by `docker compose` alongside docker-compose.yml.
+services:
+    server:
+        environment:
+            DEBUG: 'true'
+        command: ./manage.py runserver 0.0.0.0:8000
+        ports:
+            # local:docker
+            - "8008:8000"
+    client:
+        command: npm run dev
+        ports:
+            - "8007:9000"
+    db:
+        env_file: .env

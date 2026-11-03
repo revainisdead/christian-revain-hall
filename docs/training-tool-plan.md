@@ -1,0 +1,161 @@
+# Training Tool Plan
+
+Status: draft. Data storage is covered in [chess-data-plan.md](chess-data-plan.md).
+
+## Concept
+
+Every person has their own account. A signed-in user opens the **local board** (Django app `chess_local`): one chess board on one screen where they play **both sides**. They make a move, then make the opponent's reply on the same board, and so on. The point is to replay or explore any game while BlunderProof's training tools show what is happening on every square:
+
+- **move preview:** where the selected piece can go, with arrows
+- **attacker counts:** who controls each square
+
+BlunderProof shows *structure*. It never suggests moves or evaluates positions with an engine. See [Fair play](#fair-play-constraints).
+
+The same training tools will later be available in **Training** (a separate future app, `training`): a roguelike campaign against AI opponents. See [Future](#future-training-campaign-vs-ai).
+
+## Starting a game: choose your color
+
+- A new game starts by choosing **White** or **Black**.
+- The chosen color is **"you"** for the whole game. The other color is **the opponent**, even though the user also plays the opponent's moves.
+- **Board orientation follows your color and never flips automatically.** If you choose White, White is at the bottom, nearest you. If you choose Black, Black is at the bottom. That's how a real board sits.
+- A manual "flip board" button can exist as a viewing aid. It changes only the view, never who "you" are.
+- Your color is saved on the game (see the data plan).
+
+## Core chess (must have)
+
+- **Rules engine on the client:** [chess.js](https://github.com/jhlywa/chess.js) handles legal move generation, check, checkmate, stalemate, castling, en passant, promotion, and draw rules (50-move, threefold repetition, insufficient material).
+- **Rules check on the server:** `python-chess` validates every move before it is stored. See the data plan.
+- **Turns:** sides alternate automatically. The UI shows whose turn it is ("Your move" or "Opponent's move").
+- **Moving pieces:** click a piece, then click a destination. Drag and drop comes later.
+- **Promotion:** a picker for queen, rook, bishop, or knight.
+- **Game end:** show the result and the reason (checkmate, stalemate, draw rule, resignation). Reviewing the game stays possible afterwards.
+- **Games list:** start a new game, see saved games, reopen one.
+
+## History navigation (must have)
+
+- **Move list:** SAN moves in numbered pairs (`1. e4 e5 2. Nf3 ...`). Clicking a move jumps to that position.
+- **Controls:** `|<` start, `<` back, `>` forward, `>|` end. Left and right arrow keys step back and forward; Home and End jump to the ends.
+- **Viewing the past is read-only by default.** If the user makes a move while viewing an earlier position, v1 asks to **truncate**: discard every later move and continue from there. Keeping both lines as variations (a move tree) comes later.
+- **Undo:** remove the last move. This is the same as truncating at the previous ply.
+
+## Training tool 1: move preview and annotations
+
+### 1a. Move preview (automatic)
+
+When the user selects a piece that belongs to the side to move:
+
+- Every **legal destination square is tinted red**.
+- A **basic arrow** is drawn from the piece to each destination, so the user can see the direction it travels. v1 uses straight lines for every piece, knights included. An L-shaped knight path is a later polish item.
+- Captures get a stronger tint or ring than quiet moves.
+- Deselecting the piece (clicking it again, clicking an empty non-target square, or pressing Esc) clears the preview.
+
+### 1b. User annotations (manual)
+
+Same conventions as other chess sites:
+
+- **Right-click a square** to toggle a highlight color on it.
+- **Right-click and drag** from one square to another to draw an arrow.
+- Modifier keys (Shift, Alt, Ctrl) pick alternate colors.
+- A left click on the board clears annotations.
+- **Annotations are not saved.** They live in client state and are cheap to redraw at any time.
+
+### Rendering (canvas)
+
+Arrows and highlights are drawn on canvas layers over the board, building on the existing `ChessOverlay.vue` (`drawArrow(from, to)` already works).
+
+- **Native Canvas 2D first, no library.** It already covers everything needed:
+  - opacity: `globalAlpha` or `rgba` colors,
+  - glow: `shadowBlur` and `shadowColor`,
+  - rounded ends: `lineCap` and `lineJoin`,
+  - arrowheads,
+  - additive or blended highlights: `globalCompositeOperation`.
+- **Two layers:** an *auto* layer (move preview, attacker-count tints) and a *user* layer (annotations). Each can be cleared and redrawn on its own.
+- **Redraw is a pure function** of state: board, selection, and the annotation list. Nothing is drawn incrementally, so the canvas is always correct after any change (navigation, resize, theme).
+- **Sharp on high-DPI screens:** size the canvas backing store by `devicePixelRatio`.
+- **Resizes with the board:** a `ResizeObserver` triggers a redraw, which also fixes today's hard-coded 400px canvas.
+- **When to add a library:** if hit-testing, animation, or many objects get heavy, switch to **Konva** (with `vue-konva`). It provides layers, opacity, shadow and glow, and tweening, and the redraw-from-state design carries over unchanged.
+
+## Training tool 2: attacker counts
+
+Each square can show how many pieces attack it:
+
+- **Bottom-left corner, green:** the number of **your** pieces (your chosen color) that attack the square.
+- **Bottom-right corner, red:** the number of the **opponent's** pieces that attack it.
+- **When no piece is selected,** the whole square is tinted:
+  - **green** if you have more attackers (you control it),
+  - **red** if the opponent has more (you're losing it),
+  - no tint if the counts are equal, including zero to zero.
+- **When a piece is selected,** the move-preview colors take over the square tints. The corner numbers stay visible.
+- "You" is your chosen color, so the green and red sides never swap during a game.
+
+### Definitions (v1)
+
+**"Attacks"** means the piece could capture on that square if an enemy piece stood there:
+- Pawns attack diagonally only. Their forward pushes don't count.
+- Pieces attacking a square occupied by their own side count. That's **defense**.
+- Pinned pieces still count in v1. Excluding them could be a toggle later.
+- Kings count.
+- Sliding pieces stop at the first piece in the way, so **no x-rays** in v1. A rook behind a rook counts once. Counting batteries is a later toggle.
+
+The counts are computed on the client from the current position. They are not stored.
+
+### Known limitation
+
+More attackers isn't the same as winning the square: a pawn attacking a square defended by two queens still wins material there. v1 shows raw counts, labelled as counts. A later version can weight them by piece value (static exchange evaluation). That's still structural information, not an engine.
+
+### Display
+
+- Counts on all 64 squares could be noisy. Provide a toggle with three modes: off, occupied squares only, all squares.
+- Use colors that hold up for color-blind users. Pair red and green with the corner position (left is you, right is them) so color isn't the only signal.
+
+## Accounts and authentication
+
+Each person has their own account, and all games belong to one user. There are three login methods, all planned:
+
+1. **Django session login (now, for dev).** DRF requires a logged-in user on every endpoint by default, using `SessionAuthentication` and `IsAuthenticated`. Log in through `/api-auth/login/` or `/admin/`. The client needs a login page, and axios must send cookies (`withCredentials`) and the CSRF token header.
+2. **JWT.** Token login for the SPA via `djangorestframework-simplejwt`: access and refresh tokens, refresh rotation, and token blacklisting on logout. Sessions stay enabled for the admin.
+3. **Google sign-in.** Google Identity Services issues an ID token, which the server verifies and exchanges for our JWT. A matching account is created on first sign-in. Use `django-allauth` with `dj-rest-auth`, or verify the token directly with `google-auth`. Decide when the work starts.
+
+Also needed:
+- sign-up (username, email, password) for non-Google users,
+- logout,
+- a "me" endpoint,
+- password reset later.
+
+**Upgrade first:** the server runs **Django 4.0 on Python 3.8**, both past end of life. Current releases of the JWT and Google auth libraries expect newer Django. Upgrading to a supported Django LTS (and the Python it requires) is part of Phase 0.
+
+## Fair play constraints
+
+These follow from [FAIR_PLAY.md](../FAIR_PLAY.md) and the hard rule in CLAUDE.md:
+
+- **No engine evaluation, best-move hints, or "blunder alerts" on positions the user plays on the local board.** The training tools describe the position. They don't recommend a move.
+- **No FEN or PGN import, screen capture, extension, or overlay on other sites.** Positions enter only by playing moves on our board.
+- **Remaining risk:** a user could copy a live game by hand onto the local board, and any analysis board allows this. The fair play policy forbids it, and keeping engines out limits how useful it would be. Revisit before adding any feature that gives positional *advice*.
+- Engine-backed AI opponents exist only inside Training games that BlunderProof creates. They never analyze arbitrary user positions.
+
+## Phases
+
+| Phase | Scope |
+|---|---|
+| **0. Foundation** | Upgrade Django and Python. Add `chess.js` and `python-chess`. Build the `Game`/`Move` models and API (data plan). Client login page plus session auth. Sign-up. |
+| **1. Playable local board** | Color choice and orientation, legal moves, turns, promotion, game-end detection, games list, save and load. Move list and history navigation. |
+| **2. Training tool 1** | Canvas layer rework (DPR, resize, redraw from state). Move preview tints and arrows. Right-click annotations with opacity and glow. |
+| **3. Training tool 2** | Attacker counts, square tints, display toggle. |
+| **4. Auth, part 2** | JWT for the SPA, then Google sign-in. |
+| **5. Polish** | Drag and drop, knight L-arrows, animations, sounds, responsive board size, Playwright smoke test of a full game. |
+
+## Future: Training (campaign vs AI)
+
+A separate Django app, `training`, with a roguelike structure:
+
+- **AI opponents of increasing difficulty.** For example, a UCI engine such as Stockfish run server-side with limited skill and depth, or a custom engine.
+- **Runs and progression:** go deep through a ladder of harder opponents. Losing ends the run.
+- **Training tools as in-game resources:** move preview and attacker counts are available, possibly limited or unlocked over time.
+- **Achievements and rewards:** first win, flawless game, win without losing a piece, and so on.
+- **RNG card system:** cards that give buffs or rule twists for a run or a game. For example, attacker counts for N turns, or an extra undo. Effects stay inside Training games.
+- **Later still:** a variations tree on the local board instead of truncating. Possibly PGN import of games that are verifiably finished.
+
+## Open questions
+
+1. Should the manual "flip board" view button exist at all, or is the board always fixed to your color?
+2. Google sign-in: `django-allauth` + `dj-rest-auth` (more features, more moving parts), or `google-auth` token verification only (smaller)?

@@ -1,3 +1,7 @@
+# Base services shared by every environment. Not used on its own:
+#   dev:  docker compose up                      (auto-merges docker-compose.override.yml)
+#   prod: set COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml in the server's .env
+#         (or PROD=1 docker-scripts/<cmd> for a one-off)
 services:
     server:
         build:
@@ -5,22 +9,16 @@ services:
             dockerfile: dockerfiles/Dockerfile-server
         depends_on:
             db:
-              condition: service_healthy
+                condition: service_healthy
         env_file: .env
         working_dir: /srv/app/server
         user: ${UID:-1000}
         environment:
-            DEBUG: 'true'
             # username:password@{net alias}/{db name}
             DATABASE_URL: postgres://crhall:crhall@crh-db-net/crhall
-        command: ./manage.py runserver 0.0.0.0:8000
-        ports:
-            # local:docker
-            - "8008:8000"
         volumes:
             - ".:/srv/app:delegated"
             - "static-volume:/srv/app/static:z"
-            - "python-packages:/usr/local/lib/python3.10/site-packages:z"
         networks:
             app_net:
                 ipv4_address: 172.32.1.1
@@ -30,9 +28,6 @@ services:
         build:
             context: .
             dockerfile: dockerfiles/Dockerfile-client
-        command: npm run dev
-        ports:
-            - "8007:9000"
         env_file: .env
         working_dir: /srv/app/client
         volumes:
@@ -63,7 +58,6 @@ services:
         ports:
             # local:docker
             - "0:5432"
-        env_file: .env
         expose:
             - 5432
         volumes:
@@ -81,8 +75,6 @@ volumes:
         name: christian-hall_db-volume
     static-volume:
         name: christian-hall_static-volume
-    python-packages:
-        name: christian-hall_python-packages
 
 networks:
     app_net:

@@ -21,3 +21,6 @@ one-percent-growth-files/data_pdfs_old/
 one-percent-growth-files/docker-compose.yml
 one-percent-growth-files/hierarchy.json
 one-percent-growth-files/new_studentchoiceconnect_pdfs/
+
+# Windows alternate data stream files from copying into WSL
+*:Zone.Identifier
