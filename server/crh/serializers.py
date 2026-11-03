@@ -1,7 +1,12 @@
-from django.contrib.auth.models import Group, User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.conf import settings
 from rest_framework import serializers
 
 from bank.serializers import BankAccountSerializer
+
+
+User = get_user_model()
 
 
 class UserLinkSerializer(serializers.HyperlinkedModelSerializer):

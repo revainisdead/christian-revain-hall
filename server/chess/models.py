@@ -1,6 +1,9 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.db import models
 
-from django.contrib.auth.models import User
+
+User = get_user_model()
 
 
 class ChPiece(models.Model):
@@ -16,6 +19,7 @@ class ChPiece(models.Model):
         KING = 'KING', 'King'
 
     role = models.CharField(max_length=20, choices=Roles.choices, default=Roles.PAWN)
+    position = models.CharField(max_length=2, blank=True, null=True)
 
 
 class ChPlayer(models.Model):
