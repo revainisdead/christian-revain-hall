@@ -15,7 +15,7 @@ COMPOSE_0 := docker compose -f docker-compose.yml -f docker-compose.override.yml
 COMPOSE   := $(or $(COMPOSE_$(PROD)),docker compose)
 
 .DEFAULT_GOAL := help
-.PHONY: help dev rebuild-env setup up start stop logs migrate makemigrations console shell lint
+.PHONY: help dev rebuild-env setup up start stop down cleanup logs migrate makemigrations console shell lint
 
 help: ## List targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -37,8 +37,14 @@ up: ## Start everything in the background
 start: ## Start everything and follow logs in the foreground
 	$(SCRIPTS)/start
 
-stop: ## Stop all containers
+stop: ## Stop all containers (they still exist and hold their volumes)
 	$(SCRIPTS)/stop
+
+down: ## Stop and remove containers + network (named volumes are kept)
+	$(COMPOSE) down --remove-orphans
+
+cleanup: ## Remove this project's containers, unused volumes (not the db) and dangling images; asks first
+	$(SCRIPTS)/cleanup
 
 logs: ## Follow logs (last 20 lines)
 	$(COMPOSE) logs -f --tail 20

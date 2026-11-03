@@ -1,15 +1,13 @@
 #!/bin/bash
 
-# Important thing is to not delete all images from another project
-# - Specify image list (not sk images)
-# - Specify volume list (not sk volumes)
+# Only touches this compose project's resources (by compose project label).
 
 # Stop containers
 # Delete python cache files
 # Deleting stopped Docker containers
 # Deleting dangling images (images with no container)
 # Deleting volumes (all data)
-# Drop named volumes client-volume, python-packages
+# The database volume is kept.
 
 
 set -e
@@ -17,6 +15,46 @@ SCRIPT_BASE=$(dirname "$0")
 cd $SCRIPT_BASE/..
 
 source $SCRIPT_BASE/utils
+
+# Never deleted by this script.
+PROTECTED_VOLUMES=(
+    christian-hall_db-volume
+)
+
+# Resources from other projects on this machine that older versions of this script filtered out
+# by name. Not used anymore: the commands below are scoped by compose project label, so other
+# projects' resources are never listed in the first place. Kept for reference.
+OTHER_PROJECT_RESOURCES=(
+    # summit-knowledge-integration
+    summit-knowledge-integration_db
+    summit-knowledge-integration_web
+    summit-knowledge-integration_celery
+    summit-knowledge-integration_static_build
+    summit-knowledge-integration_redis
+    summit-knowledge-integration_vue
+    summit-knowledge-integration_jasmine
+    summit-knowledge_db-volume
+    summit-knowledge_python-packages
+    summit-knowledge_redis-volume
+    summit-knowledge_static-files
+    # erp-service
+    erp-service_erp
+    erp-service_celery
+    erp-service_db
+    erp-service_redis
+    erp-service_db-volume
+    erp-service_python-packages
+    erp-service_redis-volume
+    erp-service_upload-volume
+    # login-service
+    login-service_login
+    login-service_nginx
+    login-service_db
+    login-service_redis
+    login-service_db-volume
+    login-service_python-packages
+    login-service_redis-volume
+)
 
 docker=
 no_input=
@@ -37,7 +75,7 @@ while [[ $# -gt 0 ]]; do
             cecho "Usage: $(basename $0) <options>" default bold
             echo
             echo "Services:"
-            echo "$(docker-compose config --services)"
+            echo "$(docker_compose config --services)"
             echo
             echo "Options:"
             echo "  -y  --no-input      Assume yes for all user input"
@@ -55,8 +93,6 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 set -- "${POSITIONAL[@]}"
-
-# Default to development environment
 
 if [ ! "$no_input" ]; then
     cecho "This will stop you running services and delete cache, build files and docker volumes." yellow bold
@@ -78,73 +114,27 @@ $SCRIPT_BASE/stop
 #find . \( -type f -name "*.pyc" -o -type d -name __pycache__ \) -delete
 
 if [ "$(which docker)" ]; then
+    # Everything below is scoped to this compose project via the labels compose puts on
+    # containers, volumes and images, so other projects' resources are never touched.
+    project=$(docker_compose config 2>/dev/null | awk '/^name:/ {print $2; exit}')
+    project=${project:-$(basename "$PWD")}
+    project_filter="label=com.docker.compose.project=$project"
+
     echo
-    cecho "Deleting stopped CRH Docker containers, dangling images and volumes..." default bold
+    cecho "Removing $project containers and network..." default bold
+    docker_compose down --remove-orphans
 
-    container_list=$(docker_compose ps -q |
-        awk '! /summit-knowledge-integration_db/' |
-        awk '! /summit-knowledge-integration_web/' |
-        awk '! /summit-knowledge-integration_celery/' |
-        awk '! /summit-knowledge-integration_static_build/' |
-        awk '! /summit-knowledge-integration_redis/' |
-        awk '! /summit-knowledge-integration_vue/' |
-        awk '! /summit-knowledge-integration_jasmine/' |
-        awk '! /erp-service_erp/' |
-        awk '! /erp-service_celery/' |
-        awk '! /erp-service_db/' |
-        awk '! /erp-service_redis/' |
-        awk '! /login-service_login/' |
-        awk '! /login-service_nginx/' |
-        awk '! /login-service_db/' |
-        awk '! /login-service_redis/'
-    )
-
-    if [ "$container_list" ]; then
-        cecho "Removing docker containers: ${container_list}" green
-        docker container rm -f $container_list
-    fi
-
-    # Remove from consideration both db volumes and all sk volumes.
-    volume_list=$(docker volume ls --filter dangling=true -q |
-        awk '! /christian-hall_db-volume/' |
-
-        awk '! /summit-knowledge_db-volume/' |
-        awk '! /summit-knowledge_python-packages/' |
-        awk '! /summit-knowledge_redis-volume/' |
-        awk '! /summit-knowledge_static-files/' |
-        awk '! /erp-service_db-volume/' |
-        awk '! /erp-service_python-packages/' |
-        awk '! /erp-service_redis-volume/' |
-        awk '! /erp-service_upload-volume/' |
-        awk '! /login-service_db-volume/' |
-        awk '! /login-service_python-packages/' |
-        awk '! /login-service_redis-volume/'
-    )
+    # Keep the database volume; everything else unused by this project goes.
+    volume_list=$(docker volume ls -q --filter dangling=true --filter "$project_filter" |
+        grep -v -x -F -f <(printf '%s\n' "${PROTECTED_VOLUMES[@]}") || true)
     if [ "$volume_list" ]; then
         cecho "Removing docker volumes: ${volume_list}" green
         docker volume rm -f $volume_list
     fi
 
-    # Remove from consideration all sk images
-    image_list=$(docker images --filter dangling=true -q |
-        awk '! /summit-knowledge-integration_db/' |
-        awk '! /summit-knowledge-integration_web/' |
-        awk '! /summit-knowledge-integration_celery/' |
-        awk '! /summit-knowledge-integration_static_build/' |
-        awk '! /summit-knowledge-integration_redis/' |
-        awk '! /summit-knowledge-integration_vue/' |
-        awk '! /summit-knowledge-integration_jasmine/' |
-        awk '! /erp-service_erp/' |
-        awk '! /erp-service_celery/' |
-        awk '! /erp-service_db/' |
-        awk '! /erp-service_redis/' |
-        awk '! /login-service_login/' |
-        awk '! /login-service_nginx/' |
-        awk '! /login-service_db/' |
-        awk '! /login-service_redis/'
-    )
+    image_list=$(docker images -q --filter dangling=true --filter "$project_filter")
     if [ "$image_list" ]; then
-        cecho "Removing docker images: ${image_list}" green
+        cecho "Removing dangling docker images: ${image_list}" green
         docker rmi -f $image_list
     fi
 fi
