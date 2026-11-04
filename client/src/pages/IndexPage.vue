@@ -241,12 +241,15 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
   border: 2px solid #3a2a20;
   transition: box-shadow 0.25s;
 }
-/* Turn glow on the edge of the side to move (White bottom, Black top for now). */
+.index-page {
+  background: linear-gradient(135deg, #0f9b8e 0%, #1565c0 100%);
+}
+/* Turn glow on the edge of the side to move, in that side's color (White bottom, Black top for now). */
 .turn-w .board-container {
-  box-shadow: 0 10px 14px -6px rgba(255, 196, 0, 0.9);
+  box-shadow: 0 12px 16px -6px rgba(255, 255, 255, 0.95);
 }
 .turn-b .board-container {
-  box-shadow: 0 -10px 14px -6px rgba(255, 196, 0, 0.9);
+  box-shadow: 0 -12px 16px -6px rgba(0, 0, 0, 0.9);
 }
 
 .player-row {
@@ -256,7 +259,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
   height: 36px;
   padding: 0 4px;
   font-weight: 500;
-  opacity: 0.45;
+  color: #fff;
+  opacity: 0.5;
   transition: opacity 0.25s;
 }
 .player-row.active {
@@ -274,12 +278,15 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 .player-row.black .turn-disc {
   background: #222;
 }
-.player-row.active .turn-disc {
-  box-shadow: 0 0 0 3px rgba(255, 196, 0, 0.6), 0 0 8px 2px rgba(255, 196, 0, 0.8);
+.player-row.white.active .turn-disc {
+  box-shadow: 0 0 8px 3px rgba(255, 255, 255, 0.95);
+}
+.player-row.black.active .turn-disc {
+  box-shadow: 0 0 8px 3px rgba(0, 0, 0, 0.9);
 }
 .turn-label {
   font-size: 0.85em;
-  color: #8a6d00;
+  opacity: 0.85;
 }
 .side-panels {
   width: 320px;

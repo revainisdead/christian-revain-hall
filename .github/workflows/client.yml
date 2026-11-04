@@ -22,7 +22,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # pinned: Playwright 1.59 has no ubuntu-26.04 support yet
 
     defaults:
       run:
@@ -48,7 +48,7 @@ jobs:
         run: npm run build
 
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # pinned: Playwright 1.59 has no ubuntu-26.04 support yet
     timeout-minutes: 20
 
     defaults:
