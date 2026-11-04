@@ -19,6 +19,8 @@ test('click-to-move plays e2-e4, then back and forward step through it', async (
   await expect(page.locator(`${sq('e4')} img`)).toHaveAttribute('alt', 'w_pawn');
   await expect(page.locator(`${sq('e2')} img`)).toHaveCount(0);
   await expect(sideToMove).toHaveText('Black to move');
+  await expect(page.getByTestId('player-b')).toHaveClass(/active/);
+  await expect(page.getByTestId('player-w')).not.toHaveClass(/active/);
   await expect(page.getByTestId('move-list')).toContainText('1. e2-e4');
 
   await page.getByTestId('move-back').click();

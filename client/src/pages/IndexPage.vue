@@ -1,13 +1,28 @@
 <template>
   <q-page class="index-page row items-start justify-center q-pa-lg q-gutter-lg">
-    <div class="board-container">
-      <ChessBoard
-        :position="game.position.value"
-        :selected="selected"
-        :highlights="lastMoveSquares"
-        @square-click="onSquareClick"
-      />
-      <ChessOverlay :arrows="arrows" />
+    <!-- Player rows above/below the board (Black on top, White at the bottom); the side to move glows. -->
+    <div class="board-column" :class="`turn-${game.sideToMove.value}`">
+      <div class="player-row black" :class="{ active: game.sideToMove.value === 'b' }" data-testid="player-b">
+        <span class="turn-disc" />
+        <span>Black</span>
+        <span v-if="game.sideToMove.value === 'b'" class="turn-label">to move</span>
+      </div>
+
+      <div class="board-container" data-testid="board">
+        <ChessBoard
+          :position="game.position.value"
+          :selected="selected"
+          :highlights="lastMoveSquares"
+          @square-click="onSquareClick"
+        />
+        <ChessOverlay :arrows="arrows" />
+      </div>
+
+      <div class="player-row white" :class="{ active: game.sideToMove.value === 'w' }" data-testid="player-w">
+        <span class="turn-disc" />
+        <span>White</span>
+        <span v-if="game.sideToMove.value === 'w'" class="turn-label">to move</span>
+      </div>
     </div>
 
     <div class="column q-gutter-y-md side-panels">
@@ -224,6 +239,47 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
   height: 400px;
   box-sizing: content-box;
   border: 2px solid #3a2a20;
+  transition: box-shadow 0.25s;
+}
+/* Turn glow on the edge of the side to move (White bottom, Black top for now). */
+.turn-w .board-container {
+  box-shadow: 0 10px 14px -6px rgba(255, 196, 0, 0.9);
+}
+.turn-b .board-container {
+  box-shadow: 0 -10px 14px -6px rgba(255, 196, 0, 0.9);
+}
+
+.player-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 4px;
+  font-weight: 500;
+  opacity: 0.45;
+  transition: opacity 0.25s;
+}
+.player-row.active {
+  opacity: 1;
+}
+.turn-disc {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #3a2a20;
+}
+.player-row.white .turn-disc {
+  background: #fff;
+}
+.player-row.black .turn-disc {
+  background: #222;
+}
+.player-row.active .turn-disc {
+  box-shadow: 0 0 0 3px rgba(255, 196, 0, 0.6), 0 0 8px 2px rgba(255, 196, 0, 0.8);
+}
+.turn-label {
+  font-size: 0.85em;
+  color: #8a6d00;
 }
 .side-panels {
   width: 320px;
