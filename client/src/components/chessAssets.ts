@@ -8,6 +8,13 @@ export type PieceCode = `${PieceColor}_${PieceRole}`;
 // Square name ("e4") -> piece on that square.
 export type Position = Record<string, PieceCode>;
 
+// Overlay arrow between two squares; color is any canvas color (default: translucent red).
+export interface Arrow {
+  from: string;
+  to: string;
+  color?: string;
+}
+
 export const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] as const;
 export const RANKS = [8, 7, 6, 5, 4, 3, 2, 1] as const;
 

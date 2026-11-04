@@ -13,6 +13,7 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
 ## Plans
 
 - `plans/training-tool-plan.md`: the local board and its training tools (color choice, history navigation, move preview and arrows, attacker counts), auth, phases, and the future `training` campaign.
+- `plans/ui-plan.md`: client steps in order (first move and controls, chess.js rules, saving via the API, orientation, the arrow system, attacker counts).
 - `plans/chess-data-plan.md`: storage design (Game → Move with FEN per move, no per-piece rows) and the games API.
 - `plans/backend-tech-plan.md`: ordered backend work with code requirements (framework upgrade, legacy app removal, auth endpoints, games/moves API, tests, JWT, Google).
 - `plans/deploy-plan.md`: run on the existing EC2 box with the docker-scripts, then HTTPS, backups, push-to-deploy, CI-built images, and Terraform (import first, replace later).
@@ -24,12 +25,13 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
   - `src/router/index.ts`: a guard sends logged-out users to `/login`. Routes are login-only unless `meta.public`.
   - `src/stores/auth.ts`: Pinia auth store (`fetchMe`, `login`, `googleLogin`, `logout`); session cookies plus CSRF.
   - Stores live in `src/stores/`, and `quasar.config.js` sets `sourceFiles.store: 'src/stores/index'`. Without it Quasar 1.x looks for `src/store/` and never installs Pinia. The router guard calls `useAuthStore(store)` with the instance Quasar passes in.
-  - `src/pages/IndexPage.vue`: currently hosts the board
+  - `src/pages/IndexPage.vue`: the board plus two control cards: **Moves** (start/back/forward/end, move list, arrow keys) and **Arrows (testing)** (draw by squares, sample set, undo, clear)
+  - `src/components/useBoardHistory.ts`: positions plus a `ply` cursor (`move`, `back`, `forward`, `goTo`). No rules yet; chess.js comes in UI plan step 2 behind the same interface.
   - `src/components/ChessPiece.vue` keeps a `fileUrl` / `import.meta.url` reference line on purpose. Don't remove it.
-  - `src/components/ChessBoard.vue`: 8x8 CSS grid; takes a `position` prop (`{ e4: 'w_pawn', ... }`), defaulting to the starting position
+  - `src/components/ChessBoard.vue`: 8x8 CSS grid; takes `position` (`{ e4: 'w_pawn', ... }`, default the starting position), `selected` and `highlights`, and emits `square-click`
   - `src/components/BoardPiece.vue`: one board square (PNG background); `ChessPiece.vue`: one piece (PNG `<img>`)
   - `src/components/chessAssets.ts`: piece/position types, `startingPosition()`, and image path helpers
-  - `src/components/ChessOverlay.vue`: transparent canvas over the board for arrows (`drawArrow('e2', 'e4')`)
+  - `src/components/ChessOverlay.vue`: transparent canvas over the board. Takes an `arrows` prop (`{ from, to, color? }[]`) and redraws from it on every change, never incrementally. `data-arrow-count` is for tests.
   - `public/JohnPablok Cburnett Chess set/`: piece and square art (PNGs in several sizes, plus SVGs). The board uses `PNGs/With Shadow/128px` pieces and `PNGs/No shadow/128h` brown squares.
 - `server/`: Django project `blunderproof` (settings, root URLs, user/group viewsets)
   - `chess_local/`: local (same-screen) games. `Game` (owner, `user_color`, `start_fen`, status) has many `Move`s (`ply`, `uci`, `san`, `fen_after`).
