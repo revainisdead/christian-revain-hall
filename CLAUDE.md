@@ -26,7 +26,7 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
   - `src/stores/auth.ts`: Pinia auth store (`fetchMe`, `login`, `googleLogin`, `logout`); session cookies plus CSRF.
   - Stores live in `src/stores/`, and `quasar.config.js` sets `sourceFiles.store: 'src/stores/index'`. Without it Quasar 1.x looks for `src/store/` and never installs Pinia. The router guard calls `useAuthStore(store)` with the instance Quasar passes in.
   - `src/pages/IndexPage.vue`: the board plus two control cards: **Moves** (start/back/forward/end, move list, arrow keys) and **Arrows (testing)** (draw by squares, sample set, undo, clear)
-  - `src/components/useBoardHistory.ts`: positions plus a `ply` cursor (`move`, `back`, `forward`, `goTo`). No rules yet; chess.js comes in UI plan step 2 behind the same interface.
+  - `src/components/useBoardHistory.ts`: chess.js move history plus a `ply` cursor (`check`, `move`, `back`, `forward`, `goTo`, `status`). Game end matches the server's `board.outcome()` (no claims): threefold and 50-move only mark a draw as claimable.
   - `src/components/ChessPiece.vue` keeps a `fileUrl` / `import.meta.url` reference line on purpose. Don't remove it.
   - `src/components/ChessBoard.vue`: 8x8 CSS grid; takes `position` (`{ e4: 'w_pawn', ... }`, default the starting position), `selected` and `highlights`, and emits `square-click`
   - `src/components/BoardPiece.vue`: one board square (PNG background); `ChessPiece.vue`: one piece (PNG `<img>`)

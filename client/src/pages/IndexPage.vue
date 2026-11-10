@@ -1,11 +1,11 @@
 <template>
   <q-page class="index-page row items-start justify-center q-pa-lg q-gutter-lg">
     <!-- Player rows above/below the board (Black on top, White at the bottom); the side to move glows. -->
-    <div class="board-column" :class="`turn-${game.sideToMove.value}`">
-      <div class="player-row black" :class="{ active: game.sideToMove.value === 'b' }" data-testid="player-b">
+    <div class="board-column" :class="turnClass">
+      <div class="player-row black" :class="{ active: isTurn('b') }" data-testid="player-b">
         <span class="turn-disc" />
         <span>Black</span>
-        <span v-if="game.sideToMove.value === 'b'" class="turn-label">to move</span>
+        <span v-if="isTurn('b')" class="turn-label">to move</span>
       </div>
 
       <div class="board-container" data-testid="board">
@@ -13,15 +13,16 @@
           :position="game.position.value"
           :selected="selected"
           :highlights="lastMoveSquares"
+          :check="game.checkSquare.value"
           @square-click="onSquareClick"
         />
         <ChessOverlay :arrows="arrows" />
       </div>
 
-      <div class="player-row white" :class="{ active: game.sideToMove.value === 'w' }" data-testid="player-w">
+      <div class="player-row white" :class="{ active: isTurn('w') }" data-testid="player-w">
         <span class="turn-disc" />
         <span>White</span>
-        <span v-if="game.sideToMove.value === 'w'" class="turn-label">to move</span>
+        <span v-if="isTurn('w')" class="turn-label">to move</span>
       </div>
     </div>
 
@@ -31,11 +32,22 @@
         <q-card-section class="row items-center justify-between q-pb-none">
           <div class="text-subtitle1">Moves</div>
           <q-badge
-            :color="game.sideToMove.value === 'w' ? 'grey-2' : 'grey-9'"
-            :text-color="game.sideToMove.value === 'w' ? 'black' : 'white'"
+            :color="game.status.value.over ? 'primary' : isTurn('w') ? 'grey-2' : 'grey-9'"
+            :text-color="isTurn('w') ? 'black' : 'white'"
             data-testid="side-to-move"
-            :label="game.sideToMove.value === 'w' ? 'White to move' : 'Black to move'"
+            :label="turnLabel"
           />
+        </q-card-section>
+
+        <q-card-section v-if="game.status.value.over" class="q-pb-none">
+          <div class="game-result" data-testid="game-result">
+            {{ resultText }}
+          </div>
+        </q-card-section>
+        <q-card-section v-else-if="game.status.value.claimable" class="q-pb-none">
+          <div class="text-caption text-grey-8" data-testid="draw-claimable">
+            Draw can be claimed ({{ game.status.value.claimable }}).
+          </div>
         </q-card-section>
 
         <q-card-section class="row justify-center q-gutter-x-xs">
@@ -87,7 +99,7 @@
             @click="game.goTo(i + 1)"
           >
             <span v-if="i % 2 === 0" class="text-grey-7">{{ i / 2 + 1 }}.</span>
-            {{ m.from }}-{{ m.to }}
+            {{ m }}
           </span>
         </q-card-section>
       </q-card>
@@ -157,30 +169,130 @@
         </q-card-actions>
       </q-card>
     </div>
+
+    <!-- Promotion picker -->
+    <q-dialog v-model="promotion.open" @hide="settlePromotion(null)">
+      <q-card data-testid="promotion-picker">
+        <q-card-section class="text-subtitle1">Promote to</q-card-section>
+        <q-card-section class="row q-gutter-sm">
+          <q-btn
+            v-for="role in PROMOTION_ROLES"
+            :key="role.code"
+            flat
+            :data-testid="`promote-${role.code}`"
+            :aria-label="role.name"
+            @click="settlePromotion(role.code)"
+          >
+            <img :src="pieceImage(`${game.sideToMove.value}_${role.name}`)" :alt="role.name" class="promo-img">
+          </q-btn>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <!-- Playing from an earlier position drops the later moves -->
+    <q-dialog v-model="truncate.open" @hide="settleTruncate(false)">
+      <q-card data-testid="truncate-confirm">
+        <q-card-section>
+          Play from here? This discards the {{ game.laterMoves.value }} later
+          {{ game.laterMoves.value === 1 ? 'move' : 'moves' }}.
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" @click="settleTruncate(false)" />
+          <q-btn
+            flat
+            color="negative"
+            label="Discard and play"
+            data-testid="truncate-ok"
+            @click="settleTruncate(true)"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import ChessBoard from 'components/ChessBoard.vue';
 import ChessOverlay from 'components/ChessOverlay.vue';
-import { Arrow } from 'components/chessAssets';
-import { useBoardHistory } from 'components/useBoardHistory';
+import { Arrow, PieceRole, pieceImage } from 'components/chessAssets';
+import { PromotionRole, useBoardHistory } from 'components/useBoardHistory';
 
 const game = useBoardHistory();
 const selected = ref<string | null>(null);
+
+const isTurn = (color: 'w' | 'b') => !game.status.value.over && game.sideToMove.value === color;
+const turnClass = computed(() => (game.status.value.over ? 'game-over' : `turn-${game.sideToMove.value}`));
+const turnLabel = computed(() => {
+  if (game.status.value.over) {
+    return 'Game over';
+  }
+  return game.sideToMove.value === 'w' ? 'White to move' : 'Black to move';
+});
+const resultText = computed(() => {
+  const { result, reason } = game.status.value;
+  const winner = result === '1-0' ? 'White wins' : result === '0-1' ? 'Black wins' : 'Draw';
+  const why = reason ? reason.charAt(0).toUpperCase() + reason.slice(1) : '';
+  return `${why}: ${winner} (${result})`;
+});
+
+const PROMOTION_ROLES: { code: PromotionRole; name: PieceRole }[] = [
+  { code: 'q', name: 'queen' },
+  { code: 'r', name: 'rook' },
+  { code: 'b', name: 'bishop' },
+  { code: 'n', name: 'knight' },
+];
+
+// Promise-backed dialogs: open, then resolve once with the user's choice (closing = cancel).
+const promotion = reactive({ open: false, resolve: null as ((r: PromotionRole | null) => void) | null });
+const truncate = reactive({ open: false, resolve: null as ((ok: boolean) => void) | null });
+
+function askPromotion(): Promise<PromotionRole | null> {
+  return new Promise((resolve) => Object.assign(promotion, { open: true, resolve }));
+}
+function settlePromotion(role: PromotionRole | null) {
+  promotion.resolve?.(role);
+  Object.assign(promotion, { open: false, resolve: null });
+}
+function askTruncate(): Promise<boolean> {
+  return new Promise((resolve) => Object.assign(truncate, { open: true, resolve }));
+}
+function settleTruncate(ok: boolean) {
+  truncate.resolve?.(ok);
+  Object.assign(truncate, { open: false, resolve: null });
+}
+
+/** Returns true when the click was a move attempt (handled), false for an illegal target. */
+async function tryMove(from: string, to: string) {
+  const kind = game.check(from, to);
+  if (kind === 'illegal') {
+    return false;
+  }
+  selected.value = null;
+  if (!game.atEnd.value && !(await askTruncate())) {
+    return true;
+  }
+  let role: PromotionRole | undefined;
+  if (kind === 'needs-promotion') {
+    role = (await askPromotion()) ?? undefined;
+    if (!role) {
+      return true;
+    }
+  }
+  game.move(from, to, role);
+  return true;
+}
 
 const lastMoveSquares = computed(() => {
   const m = game.lastMove.value;
   return m ? [m.from, m.to] : [];
 });
 
-function onSquareClick(square: string) {
-  if (selected.value && game.move(selected.value, square)) {
-    selected.value = null;
+async function onSquareClick(square: string) {
+  if (selected.value && (await tryMove(selected.value, square))) {
     return;
   }
-  // Select (or switch to) a piece of the side to move; anything else deselects.
+  // Select (or switch to) a piece of the side to move that has a legal move; anything else deselects.
   selected.value = selected.value !== square && game.canMoveFrom(square) ? square : null;
 }
 
@@ -212,7 +324,7 @@ function drawLastMove() {
 
 // Keyboard: left/right step, Home/End jump (ignored while typing in an input).
 function onKey(e: KeyboardEvent) {
-  if (e.target instanceof HTMLInputElement) {
+  if (e.target instanceof HTMLInputElement || promotion.open || truncate.open) {
     return;
   }
   const actions: Record<string, () => void> = {
@@ -307,5 +419,15 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 }
 .move-list .move.current {
   background: #ffe082;
+}
+.game-result {
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 4px;
+  background: #e3f2fd;
+}
+.promo-img {
+  width: 56px;
+  height: 56px;
 }
 </style>

@@ -8,6 +8,7 @@
       :class="{
         selected: square.name === selected,
         'last-move': highlights.includes(square.name),
+        'in-check': square.name === check,
       }"
       @click="emit('square-click', square.name)"
     >
@@ -28,11 +29,13 @@ interface Props {
   position?: Position;
   selected?: string | null;
   highlights?: string[];
+  check?: string | null;
 }
 withDefaults(defineProps<Props>(), {
   position: () => startingPosition(),
   selected: null,
   highlights: () => [],
+  check: null,
 });
 
 const emit = defineEmits<{ (e: 'square-click', square: string): void }>();
@@ -61,6 +64,9 @@ const squares = RANKS.flatMap((rank) =>
 /* Tints sit on top of the square PNG via an inset shadow. */
 .board .board-square.last-move {
   box-shadow: inset 0 0 0 100px rgba(255, 214, 0, 0.35);
+}
+.board .board-square.in-check {
+  box-shadow: inset 0 0 18px 6px rgba(220, 0, 0, 0.85);
 }
 .board .board-square.selected {
   box-shadow: inset 0 0 0 100px rgba(255, 214, 0, 0.6);

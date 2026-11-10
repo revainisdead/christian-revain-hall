@@ -1,6 +1,6 @@
 # UI Plan
 
-Status: step 1 done on `develop` (2026-11-04). This plan covers the client work in order: the board page, its controls, and the arrow system. Product behavior is defined in [training-tool-plan.md](training-tool-plan.md), and the games API in [chess-data-plan.md](chess-data-plan.md).
+Status: steps 1 and 2 done on `develop` (2026-11-04). This plan covers the client work in order: the board page, its controls, and the arrow system. Product behavior is defined in [training-tool-plan.md](training-tool-plan.md), and the games API in [chess-data-plan.md](chess-data-plan.md).
 
 ## The board page today
 
@@ -12,10 +12,10 @@ The page (`src/pages/IndexPage.vue`) has the board on the left and two control c
 | **Arrows (testing)** | From/To squares + Draw, Sample set, Last move, Undo arrow, Clear, "N drawn" count | Exercises the overlay while the arrow system is built. It is replaced by real input (right-click drag) in step 5, and may be kept behind a dev flag. |
 
 Code:
-- `components/useBoardHistory.ts`: positions list plus a `ply` cursor. It exposes `move(from, to)`, `back`, `forward`, `goTo`, `toStart`, `toEnd`, `sideToMove` and `lastMove`. Moving while viewing an earlier position drops the later moves (truncate).
-- `components/ChessBoard.vue`: emits `square-click` and takes `selected` and `highlights` (squares tinted yellow for the last move).
+- `components/useBoardHistory.ts`: chess.js move history plus a `ply` cursor. It exposes `check(from, to)` (`illegal` / `needs-promotion` / `ok`), `move(from, to, promotion?)`, `back`, `forward`, `goTo`, `toStart`, `toEnd`, `sideToMove`, `lastMove`, `status`, `checkSquare` and `legalTargets`. Every position is rebuilt by replaying from the start, as the server's `board_at` does.
+- `components/ChessBoard.vue`: emits `square-click` and takes `selected`, `highlights` (the last move, tinted yellow) and `check` (the king's square, glowing red).
 - `components/ChessOverlay.vue`: takes an `arrows` prop (`{ from, to, color? }[]`) and **redraws from state** whenever it changes. `data-arrow-count` on the canvas lets tests check it.
-- Tests: `tests/moves.spec.ts` (click-to-move, back/forward, side to move, draw/clear arrows).
+- Tests: `tests/moves.spec.ts` (click-to-move, back/forward, side to move, draw/clear arrows) and `tests/rules.spec.ts` (illegal click, castling, en passant, promotion, fool's mate, the truncate prompt).
 
 ## Steps
 
@@ -24,17 +24,20 @@ Code:
 - Click a piece of the side to move, then a square, to move it. Turns alternate. The last move's squares are tinted.
 - Back, forward, start and end, plus the keyboard shortcuts, and a clickable move list.
 - Arrow test card: draw by squares, a sample set (three colors), the last move as an arrow, undo, and clear.
-- **No rules yet:** any destination is accepted, and there is no castling, en passant or promotion. Captures just replace the piece.
+- Turn indicator: player rows above and below the board, and a glow on the mover's edge (white for White, black for Black).
 
-### Step 2: Rules with chess.js
+### Step 2: Rules with chess.js (done)
 
 - Add `chess.js` and keep the move history in it, so `useBoardHistory` keeps the same interface while gaining rules (legal moves only, SAN, check, mate, stalemate, draws).
 - Move list in SAN (`1. e4 e5 2. Nf3`).
 - Promotion picker (queen, rook, bishop, knight).
 - Game-over banner with the result and reason. Navigating back stays possible.
+- **Game end matches the server** (python-chess `outcome()` with no claims): checkmate, stalemate, insufficient material, fivefold repetition and the 75-move rule end the game. Threefold and the 50-move rule only show "Draw can be claimed". There's no claim button yet; claiming needs a server endpoint (step 3).
+- The king in check glows red.
 - Clicking an illegal square deselects (or switches the selection to another piece of the same side).
 - Truncate prompt: making a move while viewing the past asks before discarding later moves.
 - Tests: castling, en passant and promotion by clicks; an illegal click doesn't move.
+- Known gap: chess.js's insufficient-material check covers the common cases (K v K, K+minor v K, same-color bishops). python-chess also catches a few rarer ones, so in those positions the client may keep a game open that the server ends. Step 3 takes the server's status as authoritative.
 
 ### Step 3: Save games through the API
 
