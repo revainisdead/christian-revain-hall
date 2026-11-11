@@ -13,6 +13,7 @@ The page (`src/pages/IndexPage.vue`) has the board on the left and two control c
 
 Code:
 - `components/useBoardHistory.ts`: chess.js move history plus a `ply` cursor. It exposes `check(from, to)` (`illegal` / `needs-promotion` / `ok`), `move(from, to, promotion?)`, `back`, `forward`, `goTo`, `toStart`, `toEnd`, `sideToMove`, `lastMove`, `status`, `checkSquare` and `legalTargets`. Every position is rebuilt by replaying from the start, as the server's `board_at` does.
+- `pages/IndexPage.vue` holds the layout, click-to-move logic and keyboard shortcuts. The cards and dialogs are components: `PlayerRow`, `MoveControls`, `ArrowControls`, `PromotionDialog` and `TruncateDialog` (the dialogs expose a promise-returning `ask()`).
 - `components/ChessBoard.vue`: emits `square-click` and takes `selected`, `highlights` (the last move, tinted yellow) and `check` (the king's square, glowing red).
 - `components/ChessOverlay.vue`: takes an `arrows` prop (`{ from, to, color? }[]`) and **redraws from state** whenever it changes. `data-arrow-count` on the canvas lets tests check it.
 - Tests: `tests/moves.spec.ts` (click-to-move, back/forward, side to move, draw/clear arrows) and `tests/rules.spec.ts` (illegal click, castling, en passant, promotion, fool's mate, the truncate prompt).
@@ -76,8 +77,8 @@ The aim is to go from "draws a red line" to a small, reliable rendering layer th
 - A left click on the board clears annotations. Esc clears the selection, then the annotations.
 - Suppress the browser context menu over the board only.
 
-**Move preview (training tool 1a)**
-- Selecting a piece draws an arrow to each legal destination (from chess.js) and tints those squares red, with captures stronger. Deselecting clears them.
+**Move preview (training tool 1a) (done)**
+- Selecting a piece draws one arrow per direction to the farthest legal square (one per jump for knights), dots on quiet destinations, and a pulsing "marked for destruction" ring on each enemy it could capture. Details in [attack-map-plan.md](attack-map-plan.md).
 
 **Tests**
 - Keep `data-arrow-count`, and add a `data-arrows` attribute (a JSON list of `from-to-kind`) so tests can assert exactly which arrows are drawn.
@@ -87,6 +88,8 @@ The aim is to go from "draws a red line" to a small, reliable rendering layer th
 **When to switch to Konva:** if animation, hit-testing on arrows, or many objects make Canvas 2D awkward, move to Konva (`vue-konva`). The redraw-from-state design carries over unchanged.
 
 ### Step 6: Attacker counts (training tool 2)
+
+- **Done:** corner counts on the main board with a Counts dropdown (all, pieces only, off) and a "You are" dropdown, plus the "Pieces under attack" list left of the board. See [attack-map-plan.md](attack-map-plan.md) part 2. Square tints are next.
 
 - Green count at the bottom left (yours) and red at the bottom right (the opponent's) on each square, using the definitions in the training-tool plan.
 - Square tints when nothing is selected.

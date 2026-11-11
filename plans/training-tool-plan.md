@@ -2,6 +2,27 @@
 
 Status: draft. Data storage is covered in [chess-data-plan.md](chess-data-plan.md).
 
+## Training goal
+
+**BlunderProof trains the seeing behind a move, not the move itself.** Engines and bots jump to the end: a best move and a number. They skip everything a player has to see to find that move on their own. BlunderProof breaks a position into those pieces, one layer at a time:
+
+1. **Where can this piece go?** (move preview)
+2. **Who controls each square?** (attack counts)
+3. **Which of my pieces are in danger, and do they hold?** (pieces under attack)
+4. **What does the board look like once the fight is over?** (battle board)
+
+Each layer is a picture a strong player builds in their head without help. The tools exist to **check** that picture, so a player can make the step themselves, compare it with the truth, and move up. As the player improves, the aids should fade: from counts on every square, to only the threatened pieces, to nothing but the final board to confirm a guess.
+
+The aim is a player who sees the battle before it happens.
+
+Ideas this opens up (not built yet):
+- **Predict, then reveal:** before opening the battle board, the player guesses the outcome (−3? holds?) or the final position, and BlunderProof scores the guess.
+- **Step-through battles:** the battle board plays the captures one at a time instead of jumping to the end, for players still learning to count an exchange.
+- **Fading aids as progression:** in the Training campaign, aids are unlocked, limited or removed as the player levels up (ties into the RNG cards under [Future](#future-training-campaign-vs-ai)).
+- **Visualization score over time:** track prediction accuracy per player, so improvement is something they can see.
+
+All of it stays on BlunderProof's own positions and shows structure, never engine moves (see [Fair play](#fair-play-constraints)).
+
 ## Concept
 
 Every person has their own account. A signed-in user opens the **local board** (Django app `chess_local`): one chess board on one screen where they play **both sides**. They make a move, then make the opponent's reply on the same board, and so on. The point is to replay or explore any game while BlunderProof's training tools show what is happening on every square:
@@ -45,7 +66,8 @@ The same training tools will later be available in **Training** (a separate futu
 When the user selects a piece that belongs to the side to move:
 
 - Every **legal destination square is tinted red**.
-- A **basic arrow** is drawn from the piece to each destination, so the user can see the direction it travels. v1 uses straight lines for every piece, knights included. An L-shaped knight path is a later polish item.
+- A **basic arrow** shows the direction the piece travels: one per line to the farthest reachable square (so a rook's file is one arrow, not seven), and one per knight jump. v1 uses straight lines for every piece, knights included. An L-shaped knight path is a later polish item.
+- Enemy pieces it could capture are **marked for destruction** (red tint plus a pulsing crosshair ring). Built as described in [attack-map-plan.md](attack-map-plan.md).
 - Captures get a stronger tint or ring than quiet moves.
 - Deselecting the piece (clicking it again, clicking an empty non-target square, or pressing Esc) clears the preview.
 

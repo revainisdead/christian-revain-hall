@@ -16,6 +16,7 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
 - `plans/ui-plan.md`: client steps in order (first move and controls, chess.js rules, saving via the API, orientation, the arrow system, attacker counts).
 - `plans/chess-data-plan.md`: storage design (Game → Move with FEN per move, no per-piece rows) and the games API.
 - `plans/backend-tech-plan.md`: ordered backend work with code requirements (framework upgrade, legacy app removal, auth endpoints, games/moves API, tests, JWT, Google).
+- `plans/attack-map-plan.md`: move preview (arrows per direction, capture marks), the attack-count layer, and the "Pieces under attack" list (all done), plus what's next.
 - `plans/deploy-plan.md`: run on the existing EC2 box with the docker-scripts, then HTTPS, backups, push-to-deploy, CI-built images, and Terraform (import first, replace later).
 
 ## Layout
@@ -25,13 +26,18 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
   - `src/router/index.ts`: a guard sends logged-out users to `/login`. Routes are login-only unless `meta.public`.
   - `src/stores/auth.ts`: Pinia auth store (`fetchMe`, `login`, `googleLogin`, `logout`); session cookies plus CSRF.
   - Stores live in `src/stores/`, and `quasar.config.js` sets `sourceFiles.store: 'src/stores/index'`. Without it Quasar 1.x looks for `src/store/` and never installs Pinia. The router guard calls `useAuthStore(store)` with the instance Quasar passes in.
-  - `src/pages/IndexPage.vue`: the board plus two control cards: **Moves** (start/back/forward/end, move list, arrow keys) and **Arrows (testing)** (draw by squares, sample set, undo, clear)
+  - `src/pages/IndexPage.vue`: the board plus two control cards: **Moves** (start/back/forward/end, move list, arrow keys) and **Arrows (testing)** (draw by squares, sample set, undo, clear). The page keeps only layout, click-to-move and keyboard shortcuts; each piece is its own component so parallel work doesn't collide in one file.
+  - Page pieces in `src/components/`: `PlayerRow.vue`, `MoveControls.vue` (the Moves card; takes the `game` from `useBoardHistory`), `ArrowControls.vue` (`v-model:arrows`), and `PromotionDialog.vue` / `TruncateDialog.vue` (each exposes a promise-returning `ask()` and `open`).
+  - `src/settings.ts`: global client settings, set at build time from the root `.env` through `quasar.config.js` `env`. `ENABLE_SAMPLE_GAME_LOAD` starts the board on `src/samples/sample-game.json` (Morphy's Opera Game, one move before White's `Rd8#`). When unset it's on in dev and off in builds; `make e2e` forces it off. Chess facts in sample JSON are generated and checked with python-chess.
   - `src/components/useBoardHistory.ts`: chess.js move history plus a `ply` cursor (`check`, `move`, `back`, `forward`, `goTo`, `status`). Game end matches the server's `board.outcome()` (no claims): threefold and 50-move only mark a draw as claimable.
   - `src/components/ChessPiece.vue` keeps a `fileUrl` / `import.meta.url` reference line on purpose. Don't remove it.
-  - `src/components/ChessBoard.vue`: 8x8 CSS grid; takes `position` (`{ e4: 'w_pawn', ... }`, default the starting position), `selected` and `highlights`, and emits `square-click`
+  - `src/components/ChessBoard.vue`: 8x8 CSS grid; takes `position` (`{ e4: 'w_pawn', ... }`, default the starting position), `selected`, `highlights`, `check`, `targets` (preview dots) and `victims` (capture marks), and emits `square-click`
+  - `src/components/attackMap.ts`: attack-count layer and threat list logic (`squareCounts`, `exchangeLoss`, `threatsTo`), fed by `useBoardHistory.attackers`. UI in `AttackControls.vue` (Counts / You are dropdowns) and `ThreatList.vue` (left of the board).
+  - `src/pages/BattlePage.vue` (`/#/battle?board=<FEN placement>&square=`): a bare, control-less board in its own tab, opened by the eye button on a "Pieces under attack" row. It only draws the board it's given; the board page works out the battle (`battleOn`). Keep it analysis-free.
+  - `src/components/movePreview.ts`: `previewArrows(from, moves)` turns `useBoardHistory.previewMoves(from)` into one arrow per direction (one per knight jump).
   - `src/components/BoardPiece.vue`: one board square (PNG background); `ChessPiece.vue`: one piece (PNG `<img>`)
   - `src/components/chessAssets.ts`: piece/position types, `startingPosition()`, and image path helpers
-  - `src/components/ChessOverlay.vue`: transparent canvas over the board. Takes an `arrows` prop (`{ from, to, color? }[]`) and redraws from it on every change, never incrementally. `data-arrow-count` is for tests.
+  - `src/components/ChessOverlay.vue`: transparent canvas over the board. Takes an `arrows` prop (`{ from, to, color? }[]`) and redraws from it on every change, never incrementally. Arrows have a `kind` (`test`, `preview`) that sets their style. `data-arrow-count` and `data-arrows` (sorted `from-to-kind` JSON) are for tests.
   - `public/JohnPablok Cburnett Chess set/`: piece and square art (PNGs in several sizes, plus SVGs). The board uses `PNGs/With Shadow/128px` pieces and `PNGs/No shadow/128h` brown squares.
 - `server/`: Django project `blunderproof` (settings, root URLs, user/group viewsets)
   - `chess_local/`: local (same-screen) games. `Game` (owner, `user_color`, `start_fen`, status) has many `Move`s (`ply`, `uci`, `san`, `fen_after`).
