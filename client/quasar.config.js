@@ -77,7 +77,11 @@ module.exports = configure(function (ctx) {
 
       // publicPath: '/',
       // analyze: true,
-      // env: {},
+      env: {
+        // Start the board on the sample game (src/samples/sample-game.json), one move from mate.
+        // From the root .env; when unset it's on for `quasar dev` and off for builds (prod, CI, e2e).
+        ENABLE_SAMPLE_GAME_LOAD: process.env.ENABLE_SAMPLE_GAME_LOAD || (ctx.dev ? 'true' : 'false'),
+      },
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,

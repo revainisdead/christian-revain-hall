@@ -127,7 +127,7 @@ test: ## Server tests (pytest; uses a separate test database). Extra args: make 
 	$(SERVER) pytest $(ARGS)
 
 e2e: ## Playwright tests (chromium) against a fresh production build, like CI. Extra args: ARGS=...
-	$(COMPOSE) exec client sh -c "npm run build && npx playwright test --project=chromium $(ARGS)"
+	$(COMPOSE) exec client sh -c "ENABLE_SAMPLE_GAME_LOAD=false npm run build && npx playwright test --project=chromium $(ARGS)"
 
 ci: check flake8 pipcheck test lint ## Everything CI runs for the server, plus client lint
 
