@@ -8,11 +8,15 @@ export type PieceCode = `${PieceColor}_${PieceRole}`;
 // Square name ("e4") -> piece on that square.
 export type Position = Record<string, PieceCode>;
 
-// Overlay arrow between two squares; color is any canvas color (default: translucent red).
+/** What drew an arrow; sets its default style. `preview` = where the selected piece can go. */
+export type ArrowKind = 'test' | 'preview';
+
+// Overlay arrow between two squares; color is any canvas color (default depends on kind).
 export interface Arrow {
   from: string;
   to: string;
   color?: string;
+  kind?: ArrowKind;
 }
 
 export const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] as const;
@@ -40,4 +44,51 @@ export function startingPosition(): Position {
     position[`${file}8`] = `b_${BACK_RANK[i]}`;
   });
   return position;
+}
+
+const LETTER: Record<PieceRole, string> = {
+  king: 'k',
+  queen: 'q',
+  rook: 'r',
+  bishop: 'b',
+  knight: 'n',
+  pawn: 'p',
+};
+const ROLE_OF = Object.fromEntries(
+  Object.entries(LETTER).map(([role, letter]) => [letter, role as PieceRole])
+);
+
+/** Position -> FEN piece placement (the first FEN field), e.g. the start is `rnbqkbnr/pppppppp/8/...`. */
+export function toPlacement(position: Position): string {
+  return RANKS.map((rank) =>
+    FILES.map((file) => {
+      const piece = position[`${file}${rank}`];
+      if (!piece) {
+        return '1';
+      }
+      const [color, role] = piece.split('_') as [PieceColor, PieceRole];
+      return color === 'w' ? LETTER[role].toUpperCase() : LETTER[role];
+    })
+      .join('')
+      .replace(/1+/g, (run) => String(run.length))
+  ).join('/');
+}
+
+/** FEN piece placement -> Position; null if it isn't 8 ranks of 8 squares. */
+export function fromPlacement(placement: string): Position | null {
+  const rows = placement
+    .split('/')
+    .map((row) => row.replace(/[1-8]/g, (n) => '.'.repeat(Number(n))));
+  if (rows.length !== 8 || rows.some((row) => !/^[.kqrbnpKQRBNP]{8}$/.test(row))) {
+    return null;
+  }
+  return Object.fromEntries(
+    rows.flatMap((row, r) =>
+      [...row].flatMap((ch, f) =>
+        ch === '.'
+          ? []
+          : [[`${FILES[f]}${RANKS[r]}`, `${ch === ch.toUpperCase() ? 'w' : 'b'}_${ROLE_OF[ch.toLowerCase()]}`]]
+      )
+    )
+  );
 }

@@ -14,6 +14,13 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/MainLayout.vue'),
     children: [{ path: '', name: 'home', component: () => import('pages/IndexPage.vue') }],
   },
+  {
+    // Bare board in its own tab: draws ?board= (FEN placement) and marks ?square=. It analyzes
+    // nothing; the board page works out the battle before opening it.
+    path: '/battle',
+    component: () => import('layouts/BlankLayout.vue'),
+    children: [{ path: '', name: 'battle', component: () => import('pages/BattlePage.vue') }],
+  },
 
   // Always leave this as last one,
   // but you can also remove it

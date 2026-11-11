@@ -5,12 +5,13 @@
     :width="SIZE"
     :height="SIZE"
     :data-arrow-count="arrows.length"
+    :data-arrows="arrowKeys"
   />
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
-import { Arrow } from 'components/chessAssets';
+import { computed, onMounted, ref, watch } from 'vue';
+import { Arrow, ArrowKind } from 'components/chessAssets';
 
 interface Props {
   arrows?: Arrow[];
@@ -22,7 +23,17 @@ const props = withDefaults(defineProps<Props>(), {
 // Fixed for now; DPR + ResizeObserver sizing is in plans/ui-plan.md (arrow system).
 const SIZE = 400;
 const SQUARE = SIZE / 8;
-const DEFAULT_COLOR = 'rgba(220, 30, 30, 0.85)';
+
+/** Default look per kind. Preview arrows are thinner and fainter so the pieces stay readable. */
+const STYLE: Record<ArrowKind, { color: string; width: number; head: number }> = {
+  test: { color: 'rgba(220, 30, 30, 0.85)', width: 6, head: 12 },
+  preview: { color: 'rgba(200, 20, 20, 0.6)', width: 5, head: 11 },
+};
+
+/** For tests: a JSON list of `from-to-kind`, sorted. */
+const arrowKeys = computed(() =>
+  JSON.stringify(props.arrows.map((a) => `${a.from}-${a.to}-${a.kind ?? 'test'}`).sort())
+);
 
 const canvas = ref<HTMLCanvasElement | null>(null);
 
@@ -32,15 +43,19 @@ function squareCenter(square: string) {
   return { x: file * SQUARE + SQUARE / 2, y: rank * SQUARE + SQUARE / 2 };
 }
 
-function drawArrow(ctx: CanvasRenderingContext2D, { from, to, color = DEFAULT_COLOR }: Arrow) {
-  const start = squareCenter(from);
+function drawArrow(ctx: CanvasRenderingContext2D, { from, to, color, kind = 'test' }: Arrow) {
+  const style = STYLE[kind];
+  const center = squareCenter(from);
   const end = squareCenter(to);
-  const angle = Math.atan2(end.y - start.y, end.x - start.x);
-  const head = 12;
+  const angle = Math.atan2(end.y - center.y, end.x - center.x);
+  const head = style.head;
+  // Start near the edge of the origin piece, not its center, so the piece stays visible.
+  const lift = SQUARE * 0.3;
+  const start = { x: center.x + lift * Math.cos(angle), y: center.y + lift * Math.sin(angle) };
 
-  ctx.strokeStyle = color;
-  ctx.fillStyle = color;
-  ctx.lineWidth = 6;
+  ctx.strokeStyle = color ?? style.color;
+  ctx.fillStyle = color ?? style.color;
+  ctx.lineWidth = style.width;
   ctx.lineCap = 'round';
 
   // Stop the shaft at the base of the head so the tip stays sharp.

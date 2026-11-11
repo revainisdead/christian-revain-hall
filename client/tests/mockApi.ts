@@ -1,10 +1,10 @@
-import { Page } from '@playwright/test';
+import { BrowserContext, Page } from '@playwright/test';
 
 export const USER = { id: 1, username: 'christian', email: 'christian@example.com' };
 
 /** Stub the auth API so UI tests run without a Django backend (CI serves only dist/spa). */
 export async function mockAuthApi(
-  page: Page,
+  page: Page | BrowserContext, // a context also covers tabs the page opens
   { loggedIn, googleClientId = null }: { loggedIn: boolean; googleClientId?: string | null },
 ) {
   let session = loggedIn;

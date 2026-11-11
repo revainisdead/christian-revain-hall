@@ -1,8 +1,15 @@
 import { computed, ref } from 'vue';
 import { Chess, DEFAULT_POSITION, Move, PieceSymbol, Square } from 'chess.js';
-import { PieceRole, Position } from 'components/chessAssets';
+import { FILES, PieceRole, Position, RANKS } from 'components/chessAssets';
+import { AttackerMap } from 'components/attackMap';
 
 export type PromotionRole = 'q' | 'r' | 'b' | 'n';
+
+/** One legal destination for the move preview; `victim` is the square of the piece it captures. */
+export interface PreviewMove {
+  to: string;
+  victim: string | null;
+}
 
 /** What happens if `from -> to` is played now. */
 export type MoveCheck = 'illegal' | 'needs-promotion' | 'ok';
@@ -108,6 +115,19 @@ export function useBoardHistory(startFen: string = DEFAULT_POSITION) {
     return statusOf(current.value, keys.filter((k) => k === here).length);
   });
 
+  /**
+   * Who attacks each square in the shown position (chess.js `attackers`, same rules as
+   * python-chess `board.attackers`): defenders count, pins are ignored, no x-rays.
+   */
+  const attackers = computed<AttackerMap>(() =>
+    Object.fromEntries(
+      RANKS.flatMap((rank) => FILES.map((file) => `${file}${rank}` as Square)).map((square) => [
+        square,
+        { w: current.value.attackers(square, 'w'), b: current.value.attackers(square, 'b') },
+      ])
+    )
+  );
+
   /** Square of the king that is in check, if any. */
   const checkSquare = computed<string | null>(() => {
     if (!current.value.inCheck()) {
@@ -123,6 +143,28 @@ export function useBoardHistory(startFen: string = DEFAULT_POSITION) {
       return [];
     }
     return current.value.moves({ square: from as Square, verbose: true }).map((m) => m.to);
+  }
+
+  /**
+   * Legal destinations of the piece on `from`, one per square (promotion choices merged).
+   * `victim` is the square of the enemy piece the move would capture: the target square,
+   * or for en passant the pawn beside it.
+   */
+  function previewMoves(from: string): PreviewMove[] {
+    if (status.value.over) {
+      return [];
+    }
+    const byTarget = new Map<string, PreviewMove>();
+    current.value.moves({ square: from as Square, verbose: true }).forEach((m) => {
+      let victim: string | null = null;
+      if (m.isEnPassant()) {
+        victim = `${m.to[0]}${m.from[1]}`;
+      } else if (m.captured) {
+        victim = m.to;
+      }
+      byTarget.set(m.to, { to: m.to, victim });
+    });
+    return [...byTarget.values()];
   }
 
   function canMoveFrom(square: string): boolean {
@@ -154,6 +196,15 @@ export function useBoardHistory(startFen: string = DEFAULT_POSITION) {
     return true;
   }
 
+  /** Replace the game with these UCI moves (e.g. `e2e4`, `e7e8q`) and jump to the end. */
+  function load(uciMoves: string[]) {
+    const game = new Chess(startFen);
+    history.value = uciMoves.map((uci) =>
+      game.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] })
+    );
+    ply.value = history.value.length;
+  }
+
   const goTo = (n: number) => {
     ply.value = Math.min(Math.max(n, 0), lastPly.value);
   };
@@ -170,10 +221,12 @@ export function useBoardHistory(startFen: string = DEFAULT_POSITION) {
     lastMove,
     status,
     checkSquare,
+    attackers,
     atStart,
     atEnd,
     laterMoves,
     legalTargets,
+    previewMoves,
     canMoveFrom,
     check,
     move,
@@ -182,5 +235,8 @@ export function useBoardHistory(startFen: string = DEFAULT_POSITION) {
     forward,
     toStart,
     toEnd,
+    load,
   };
 }
+
+export type BoardHistory = ReturnType<typeof useBoardHistory>;

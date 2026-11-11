@@ -1,12 +1,10 @@
 <template>
   <q-page class="index-page row items-start justify-center q-pa-lg q-gutter-lg">
+    <ThreatList :threats="threats" :me="me" @preview="openBattle" />
+
     <!-- Player rows above/below the board (Black on top, White at the bottom); the side to move glows. -->
     <div class="board-column" :class="turnClass">
-      <div class="player-row black" :class="{ active: isTurn('b') }" data-testid="player-b">
-        <span class="turn-disc" />
-        <span>Black</span>
-        <span v-if="isTurn('b')" class="turn-label">to move</span>
-      </div>
+      <PlayerRow color="b" :active="isTurn('b')" />
 
       <div class="board-container" data-testid="board">
         <ChessBoard
@@ -14,253 +12,94 @@
           :selected="selected"
           :highlights="lastMoveSquares"
           :check="game.checkSquare.value"
+          :targets="preview.map((m) => m.to)"
+          :victims="preview.flatMap((m) => (m.victim ? [m.victim] : []))"
+          :counts="counts"
           @square-click="onSquareClick"
         />
-        <ChessOverlay :arrows="arrows" />
+        <ChessOverlay :arrows="overlayArrows" />
       </div>
 
-      <div class="player-row white" :class="{ active: isTurn('w') }" data-testid="player-w">
-        <span class="turn-disc" />
-        <span>White</span>
-        <span v-if="isTurn('w')" class="turn-label">to move</span>
-      </div>
+      <PlayerRow color="w" :active="isTurn('w')" />
     </div>
 
     <div class="column q-gutter-y-md side-panels">
-      <!-- Chess controls -->
-      <q-card bordered data-testid="chess-controls">
-        <q-card-section class="row items-center justify-between q-pb-none">
-          <div class="text-subtitle1">Moves</div>
-          <q-badge
-            :color="game.status.value.over ? 'primary' : isTurn('w') ? 'grey-2' : 'grey-9'"
-            :text-color="isTurn('w') ? 'black' : 'white'"
-            data-testid="side-to-move"
-            :label="turnLabel"
-          />
-        </q-card-section>
-
-        <q-card-section v-if="game.status.value.over" class="q-pb-none">
-          <div class="game-result" data-testid="game-result">
-            {{ resultText }}
-          </div>
-        </q-card-section>
-        <q-card-section v-else-if="game.status.value.claimable" class="q-pb-none">
-          <div class="text-caption text-grey-8" data-testid="draw-claimable">
-            Draw can be claimed ({{ game.status.value.claimable }}).
-          </div>
-        </q-card-section>
-
-        <q-card-section class="row justify-center q-gutter-x-xs">
-          <q-btn
-            dense
-            flat
-            icon="first_page"
-            aria-label="Start"
-            :disable="game.atStart.value"
-            @click="game.toStart"
-          />
-          <q-btn
-            dense
-            flat
-            icon="chevron_left"
-            aria-label="Back"
-            data-testid="move-back"
-            :disable="game.atStart.value"
-            @click="game.back"
-          />
-          <q-btn
-            dense
-            flat
-            icon="chevron_right"
-            aria-label="Forward"
-            data-testid="move-forward"
-            :disable="game.atEnd.value"
-            @click="game.forward"
-          />
-          <q-btn
-            dense
-            flat
-            icon="last_page"
-            aria-label="End"
-            :disable="game.atEnd.value"
-            @click="game.toEnd"
-          />
-        </q-card-section>
-
-        <q-card-section class="q-pt-none move-list" data-testid="move-list">
-          <span v-if="!game.moves.value.length" class="text-grey-7">
-            Click a piece, then a square.
-          </span>
-          <span
-            v-for="(m, i) in game.moves.value"
-            :key="i"
-            class="move"
-            :class="{ current: i + 1 === game.ply.value }"
-            @click="game.goTo(i + 1)"
-          >
-            <span v-if="i % 2 === 0" class="text-grey-7">{{ i / 2 + 1 }}.</span>
-            {{ m }}
-          </span>
-        </q-card-section>
-      </q-card>
-
-      <!-- Arrow / drawing test controls -->
-      <q-card bordered data-testid="arrow-controls">
-        <q-card-section class="row items-center justify-between q-pb-none">
-          <div class="text-subtitle1">Arrows (testing)</div>
-          <q-badge color="grey-6" :label="`${arrows.length} drawn`" />
-        </q-card-section>
-
-        <q-card-section>
-          <q-form class="row items-center q-gutter-x-sm" @submit="addArrow">
-            <q-input
-              v-model="arrowFrom"
-              dense
-              outlined
-              label="From"
-              class="square-input"
-              :rules="[isSquare]"
-              hide-bottom-space
-            />
-            <q-input
-              v-model="arrowTo"
-              dense
-              outlined
-              label="To"
-              class="square-input"
-              :rules="[isSquare]"
-              hide-bottom-space
-            />
-            <q-btn
-              type="submit"
-              dense
-              color="primary"
-              label="Draw"
-              data-testid="arrow-draw"
-            />
-          </q-form>
-        </q-card-section>
-
-        <q-card-actions>
-          <q-btn dense flat label="Sample set" @click="drawSamples" />
-          <q-btn
-            dense
-            flat
-            label="Last move"
-            :disable="!game.lastMove.value"
-            @click="drawLastMove"
-          />
-          <q-btn
-            dense
-            flat
-            label="Undo arrow"
-            :disable="!arrows.length"
-            @click="arrows.pop()"
-          />
-          <q-btn
-            dense
-            flat
-            color="negative"
-            label="Clear"
-            data-testid="arrow-clear"
-            :disable="!arrows.length"
-            @click="arrows = []"
-          />
-        </q-card-actions>
-      </q-card>
+      <MoveControls :game="game" />
+      <AttackControls v-model:mode="countMode" v-model:view-as="viewAs" />
+      <ArrowControls v-model:arrows="arrows" :last-move="game.lastMove.value" />
     </div>
 
-    <!-- Promotion picker -->
-    <q-dialog v-model="promotion.open" @hide="settlePromotion(null)">
-      <q-card data-testid="promotion-picker">
-        <q-card-section class="text-subtitle1">Promote to</q-card-section>
-        <q-card-section class="row q-gutter-sm">
-          <q-btn
-            v-for="role in PROMOTION_ROLES"
-            :key="role.code"
-            flat
-            :data-testid="`promote-${role.code}`"
-            :aria-label="role.name"
-            @click="settlePromotion(role.code)"
-          >
-            <img :src="pieceImage(`${game.sideToMove.value}_${role.name}`)" :alt="role.name" class="promo-img">
-          </q-btn>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
-
-    <!-- Playing from an earlier position drops the later moves -->
-    <q-dialog v-model="truncate.open" @hide="settleTruncate(false)">
-      <q-card data-testid="truncate-confirm">
-        <q-card-section>
-          Play from here? This discards the {{ game.laterMoves.value }} later
-          {{ game.laterMoves.value === 1 ? 'move' : 'moves' }}.
-        </q-card-section>
-        <q-card-actions align="right">
-          <q-btn flat label="Cancel" @click="settleTruncate(false)" />
-          <q-btn
-            flat
-            color="negative"
-            label="Discard and play"
-            data-testid="truncate-ok"
-            @click="settleTruncate(true)"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
+    <PromotionDialog ref="promotionDialog" :color="game.sideToMove.value" />
+    <TruncateDialog ref="truncateDialog" :later-moves="game.laterMoves.value" />
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import ArrowControls from 'components/ArrowControls.vue';
+import AttackControls from 'components/AttackControls.vue';
 import ChessBoard from 'components/ChessBoard.vue';
 import ChessOverlay from 'components/ChessOverlay.vue';
-import { Arrow, PieceRole, pieceImage } from 'components/chessAssets';
+import MoveControls from 'components/MoveControls.vue';
+import PlayerRow from 'components/PlayerRow.vue';
+import PromotionDialog from 'components/PromotionDialog.vue';
+import ThreatList from 'components/ThreatList.vue';
+import TruncateDialog from 'components/TruncateDialog.vue';
+import { Arrow, PieceColor } from 'components/chessAssets';
+import { useRouter } from 'vue-router';
+import { CountMode, ViewAs, battleOn, squareCounts, threatsTo } from 'components/attackMap';
+import { toPlacement } from 'components/chessAssets';
+import { previewArrows } from 'components/movePreview';
 import { PromotionRole, useBoardHistory } from 'components/useBoardHistory';
+import sampleGame from 'src/samples/sample-game.json';
+import { ENABLE_SAMPLE_GAME_LOAD } from 'src/settings';
 
 const game = useBoardHistory();
+if (ENABLE_SAMPLE_GAME_LOAD) {
+  game.load(sampleGame.moves);
+}
 const selected = ref<string | null>(null);
+const arrows = ref<Arrow[]>([]);
+const promotionDialog = ref<InstanceType<typeof PromotionDialog> | null>(null);
+const truncateDialog = ref<InstanceType<typeof TruncateDialog> | null>(null);
+
+const router = useRouter();
 
 const isTurn = (color: 'w' | 'b') => !game.status.value.over && game.sideToMove.value === color;
 const turnClass = computed(() => (game.status.value.over ? 'game-over' : `turn-${game.sideToMove.value}`));
-const turnLabel = computed(() => {
-  if (game.status.value.over) {
-    return 'Game over';
-  }
-  return game.sideToMove.value === 'w' ? 'White to move' : 'Black to move';
+// Move preview: the selected piece's legal destinations (arrows, dots, capture marks).
+const preview = computed(() => (selected.value ? game.previewMoves(selected.value) : []));
+const overlayArrows = computed(() => [
+  ...(selected.value ? previewArrows(selected.value, preview.value) : []),
+  ...arrows.value,
+]);
+// Attack layer and threat list. "You" is the side to move unless a color is picked.
+const countMode = ref<CountMode>('all');
+const viewAs = ref<ViewAs>('auto');
+const me = computed<PieceColor>(() => (viewAs.value === 'auto' ? game.sideToMove.value : viewAs.value));
+const counts = computed(() =>
+  squareCounts(game.attackers.value, game.position.value, me.value, countMode.value)
+);
+const threats = computed(() => threatsTo(game.attackers.value, game.position.value, me.value));
+
+/**
+ * Open a new tab with a bare board showing the position once the battle on `square` is over.
+ * The battle is worked out here; the battle page only draws the board it's given.
+ */
+function openBattle(square: string) {
+  const { steps } = battleOn(square, game.attackers.value, game.position.value, me.value);
+  const after = steps.length ? steps[steps.length - 1].position : game.position.value;
+  const href = router.resolve({ name: 'battle', query: { board: toPlacement(after), square } }).href;
+  window.open(href, '_blank');
+}
+
+// A selection belongs to one position: stepping through history drops it (and its preview).
+watch(game.ply, () => (selected.value = null));
+
+const lastMoveSquares = computed(() => {
+  const m = game.lastMove.value;
+  return m ? [m.from, m.to] : [];
 });
-const resultText = computed(() => {
-  const { result, reason } = game.status.value;
-  const winner = result === '1-0' ? 'White wins' : result === '0-1' ? 'Black wins' : 'Draw';
-  const why = reason ? reason.charAt(0).toUpperCase() + reason.slice(1) : '';
-  return `${why}: ${winner} (${result})`;
-});
-
-const PROMOTION_ROLES: { code: PromotionRole; name: PieceRole }[] = [
-  { code: 'q', name: 'queen' },
-  { code: 'r', name: 'rook' },
-  { code: 'b', name: 'bishop' },
-  { code: 'n', name: 'knight' },
-];
-
-// Promise-backed dialogs: open, then resolve once with the user's choice (closing = cancel).
-const promotion = reactive({ open: false, resolve: null as ((r: PromotionRole | null) => void) | null });
-const truncate = reactive({ open: false, resolve: null as ((ok: boolean) => void) | null });
-
-function askPromotion(): Promise<PromotionRole | null> {
-  return new Promise((resolve) => Object.assign(promotion, { open: true, resolve }));
-}
-function settlePromotion(role: PromotionRole | null) {
-  promotion.resolve?.(role);
-  Object.assign(promotion, { open: false, resolve: null });
-}
-function askTruncate(): Promise<boolean> {
-  return new Promise((resolve) => Object.assign(truncate, { open: true, resolve }));
-}
-function settleTruncate(ok: boolean) {
-  truncate.resolve?.(ok);
-  Object.assign(truncate, { open: false, resolve: null });
-}
 
 /** Returns true when the click was a move attempt (handled), false for an illegal target. */
 async function tryMove(from: string, to: string) {
@@ -269,12 +108,12 @@ async function tryMove(from: string, to: string) {
     return false;
   }
   selected.value = null;
-  if (!game.atEnd.value && !(await askTruncate())) {
+  if (!game.atEnd.value && !(await truncateDialog.value?.ask())) {
     return true;
   }
   let role: PromotionRole | undefined;
   if (kind === 'needs-promotion') {
-    role = (await askPromotion()) ?? undefined;
+    role = (await promotionDialog.value?.ask()) ?? undefined;
     if (!role) {
       return true;
     }
@@ -282,11 +121,6 @@ async function tryMove(from: string, to: string) {
   game.move(from, to, role);
   return true;
 }
-
-const lastMoveSquares = computed(() => {
-  const m = game.lastMove.value;
-  return m ? [m.from, m.to] : [];
-});
 
 async function onSquareClick(square: string) {
   if (selected.value && (await tryMove(selected.value, square))) {
@@ -296,35 +130,13 @@ async function onSquareClick(square: string) {
   selected.value = selected.value !== square && game.canMoveFrom(square) ? square : null;
 }
 
-// Arrows: test controls for the overlay. Annotations aren't saved (training-tool plan 1b).
-const arrows = ref<Arrow[]>([]);
-const arrowFrom = ref('e2');
-const arrowTo = ref('e4');
-const SQUARE_RE = /^[a-h][1-8]$/;
-const isSquare = (v: string) => SQUARE_RE.test(v.trim().toLowerCase()) || 'a1–h8';
-
-function addArrow() {
-  arrows.value.push({ from: arrowFrom.value.trim().toLowerCase(), to: arrowTo.value.trim().toLowerCase() });
-}
-
-function drawSamples() {
-  arrows.value.push(
-    { from: 'e2', to: 'e4' },
-    { from: 'g1', to: 'f3', color: 'rgba(30, 140, 60, 0.85)' },
-    { from: 'd8', to: 'h4', color: 'rgba(30, 90, 200, 0.85)' }
-  );
-}
-
-function drawLastMove() {
-  const m = game.lastMove.value;
-  if (m) {
-    arrows.value.push({ from: m.from, to: m.to, color: 'rgba(255, 170, 0, 0.9)' });
-  }
-}
-
-// Keyboard: left/right step, Home/End jump (ignored while typing in an input).
+// Keyboard: left/right step, Home/End jump (ignored while typing or while a dialog is open).
 function onKey(e: KeyboardEvent) {
-  if (e.target instanceof HTMLInputElement || promotion.open || truncate.open) {
+  if (
+    e.target instanceof HTMLInputElement ||
+    promotionDialog.value?.open ||
+    truncateDialog.value?.open
+  ) {
     return;
   }
   const actions: Record<string, () => void> = {
@@ -345,6 +157,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 </script>
 
 <style>
+.index-page {
+  background: linear-gradient(135deg, #0f9b8e 0%, #1565c0 100%);
+}
 .board-container {
   position: relative;
   width: 400px;
@@ -353,9 +168,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
   border: 2px solid #3a2a20;
   transition: box-shadow 0.25s;
 }
-.index-page {
-  background: linear-gradient(135deg, #0f9b8e 0%, #1565c0 100%);
-}
 /* Turn glow on the edge of the side to move, in that side's color (White bottom, Black top for now). */
 .turn-w .board-container {
   box-shadow: 0 12px 16px -6px rgba(255, 255, 255, 0.95);
@@ -363,71 +175,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 .turn-b .board-container {
   box-shadow: 0 -12px 16px -6px rgba(0, 0, 0, 0.9);
 }
-
-.player-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 36px;
-  padding: 0 4px;
-  font-weight: 500;
-  color: #fff;
-  opacity: 0.5;
-  transition: opacity 0.25s;
-}
-.player-row.active {
-  opacity: 1;
-}
-.turn-disc {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 2px solid #3a2a20;
-}
-.player-row.white .turn-disc {
-  background: #fff;
-}
-.player-row.black .turn-disc {
-  background: #222;
-}
-.player-row.white.active .turn-disc {
-  box-shadow: 0 0 8px 3px rgba(255, 255, 255, 0.95);
-}
-.player-row.black.active .turn-disc {
-  box-shadow: 0 0 8px 3px rgba(0, 0, 0, 0.9);
-}
-.turn-label {
-  font-size: 0.85em;
-  opacity: 0.85;
-}
 .side-panels {
   width: 320px;
-}
-.square-input {
-  width: 72px;
-}
-.move-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 10px;
-  font-family: monospace;
-}
-.move-list .move {
-  cursor: pointer;
-  padding: 0 2px;
-  border-radius: 3px;
-}
-.move-list .move.current {
-  background: #ffe082;
-}
-.game-result {
-  font-weight: 600;
-  padding: 6px 10px;
-  border-radius: 4px;
-  background: #e3f2fd;
-}
-.promo-img {
-  width: 56px;
-  height: 56px;
 }
 </style>

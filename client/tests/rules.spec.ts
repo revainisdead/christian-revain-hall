@@ -1,21 +1,10 @@
 import { test, expect, Page } from '@playwright/test';
 import { mockAuthApi } from './mockApi';
+import { play, sq } from './play';
 
 // Move sequences here were checked with python-chess (legal, and the expected SAN / result).
 
-const sq = (name: string) => `[data-square="${name}"]`;
 const pieceOn = (page: Page, square: string) => page.locator(`${sq(square)} img`);
-
-/** Play UCI moves by clicking from/to squares; a 5th char picks the promotion piece. */
-async function play(page: Page, uciMoves: string) {
-  for (const uci of uciMoves.split(' ')) {
-    await page.locator(sq(uci.slice(0, 2))).click();
-    await page.locator(sq(uci.slice(2, 4))).click();
-    if (uci.length === 5) {
-      await page.getByTestId(`promote-${uci[4]}`).click();
-    }
-  }
-}
 
 test.beforeEach(async ({ page }) => {
   await mockAuthApi(page, { loggedIn: true });
