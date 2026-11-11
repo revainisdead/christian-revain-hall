@@ -24,8 +24,8 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
 - `client/`: Quasar app (Vite, TypeScript, `<script setup>`)
   - `src/pages/LoginPage.vue` (`/#/login`): a dev-only username/password box (shown when the server's `PASSWORD_LOGIN_ENABLED`) and a Google sign-in box (Google Identity Services, when `GOOGLE_CLIENT_ID` is set). The page reads both from `GET /api/auth/config/`.
   - `src/router/index.ts`: a guard sends logged-out users to `/login`. Routes are login-only unless `meta.public`.
-  - `src/stores/auth.ts`: Pinia auth store (`fetchMe`, `login`, `googleLogin`, `logout`); session cookies plus CSRF.
-  - Stores live in `src/stores/`, and `quasar.config.js` sets `sourceFiles.store: 'src/stores/index'`. Without it Quasar 1.x looks for `src/store/` and never installs Pinia. The router guard calls `useAuthStore(store)` with the instance Quasar passes in.
+  - `src/stores/auth/index.ts`: Pinia auth store (`fetchMe`, `login`, `googleLogin`, `logout`); session cookies plus CSRF.
+  - Stores live in `src/stores/`, one folder per group (`auth/`, `board/`, ...); read `src/stores/CONTEXT.md` before adding state. Always create distinct, encapsulated groups for parts of the app; never pile unrelated state into one store. `quasar.config.js` sets `sourceFiles.store: 'src/stores/index'`. Without it Quasar 1.x looks for `src/store/` and never installs Pinia. The router guard calls `useAuthStore(store)` with the instance Quasar passes in.
   - `src/pages/IndexPage.vue`: the board plus two control cards: **Moves** (start/back/forward/end, move list, arrow keys) and **Arrows (testing)** (draw by squares, sample set, undo, clear). The page keeps only layout, click-to-move and keyboard shortcuts; each piece is its own component so parallel work doesn't collide in one file.
   - Page pieces in `src/components/`: `PlayerRow.vue`, `MoveControls.vue` (the Moves card; takes the `game` from `useBoardHistory`), `ArrowControls.vue` (`v-model:arrows`), and `PromotionDialog.vue` / `TruncateDialog.vue` (each exposes a promise-returning `ask()` and `open`).
   - `src/settings.ts`: global client settings, set at build time from the root `.env` through `quasar.config.js` `env`. `ENABLE_SAMPLE_GAME_LOAD` starts the board on `src/samples/sample-game.json` (Morphy's Opera Game, one move before White's `Rd8#`). When unset it's on in dev and off in builds; `make e2e` forces it off. Chess facts in sample JSON are generated and checked with python-chess.
@@ -45,7 +45,7 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
     - `board_at` replays moves from `start_fen` (needed for threefold detection) rather than loading a stored FEN.
     - `manage.py seed_game <user> [--color] [--moves "e2e4 e7e5"]` creates a game.
   - `accounts/`: `BpUser` custom user model (`AUTH_USER_MODEL`), plus the auth endpoints (session and JWT).
-  - `training` (future): roguelike campaign against AI with achievements. Don't use that name for anything else.
+  - `training` (future): the long-run solo game: a roguelike campaign against bots of rising difficulty, with achievements and progression (see the training-tool plan). Don't use that name for anything else.
   - Don't name a Django app `chess`; it would shadow the python-chess package (`import chess`).
 - `docker-scripts/`: wrappers around `docker compose` (`setup`, `start`, `stop`, `migrate`, `manage`, `lint`, `npm`, `console`, ...). Run with `-h` for usage.
 - `dockerfiles/`: `Dockerfile-server` (Python 3.12, Django 5.2 LTS), `Dockerfile-client` (Node 20 + Playwright Chromium), db, nginx.

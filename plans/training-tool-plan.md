@@ -168,14 +168,31 @@ These follow from [FAIR_PLAY.md](../FAIR_PLAY.md) and the hard rule in CLAUDE.md
 
 ## Future: Training (campaign vs AI)
 
-A separate Django app, `training`, with a roguelike structure:
+**The long-run product is a solo training game:** you play against bots that get harder as you get better, inside an app with enough color, flavor and progression that people want to open it every day. It should feel like a game and work like a training tool.
 
-- **AI opponents of increasing difficulty.** For example, a UCI engine such as Stockfish run server-side with limited skill and depth, or a custom engine.
-- **Runs and progression:** go deep through a ladder of harder opponents. Losing ends the run.
-- **Training tools as in-game resources:** move preview and attacker counts are available, possibly limited or unlocked over time.
-- **Achievements and rewards:** first win, flawless game, win without losing a piece, and so on.
-- **RNG card system:** cards that give buffs or rule twists for a run or a game. For example, attacker counts for N turns, or an extra undo. Effects stay inside Training games.
-- **Later still:** a variations tree on the local board instead of truncating. Possibly PGN import of games that are verifiably finished.
+A separate Django app, `training`, holds the server side. On the client, the matching Pinia groups are `campaign`, `progress` and `settings` (see `client/src/stores/CONTEXT.md`).
+
+**Opponents**
+- **A ladder of bots of increasing difficulty.** For example, a UCI engine such as Stockfish run server-side with limited skill and depth, or a custom engine.
+- **Bots with personality:** a name, a portrait, a playing style (aggressive, solid, tricky) and a few lines of flavor text. A "boss" bot ends each tier.
+- The engine only **plays** the bot's moves. Its evaluations and suggestions are never shown to the player (see [Fair play](#fair-play-constraints)).
+
+**Runs and progression**
+- **Roguelike runs:** go deep through the ladder. Losing ends the run, and what you earned carries over.
+- **Training aids as in-game resources:** move preview, attack counts, the threat list and the battle board are available, limited, or unlocked over time. They fade as the player levels up, following the [training goal](#training-goal).
+- **RNG card system:** cards that give buffs or rule twists for a run or a game. For example, attack counts for N turns, an extra undo, or one free battle-board peek. Effects stay inside Training games.
+
+**Achievements and rewards**
+- First win, flawless game, win without losing a piece, beat a boss without any aids, and so on.
+- **Visualization score:** prediction accuracy over time (guess the battle result, then reveal), so improvement is visible.
+- Cosmetic rewards: board and piece themes, bot portraits, titles.
+
+**Coming back every day**
+- Short sessions: a game against one bot fits in a few minutes.
+- A daily challenge (one position or one bot) and streaks.
+- Color and flavor throughout: themes, sounds, move and capture animations, celebrations for wins and achievements.
+
+**Later still:** a variations tree on the local board instead of truncating. Possibly PGN import of games that are verifiably finished.
 
 ## Open questions
 
