@@ -22,8 +22,19 @@
       />
       <!-- Attacker bubbles: yours bottom-left (green), the opponent's bottom-right (red). -->
       <template v-if="bubbles[square.name]">
+        <!-- On your own piece the green bubble is defense: drawn as a shield. -->
         <span
-          v-if="bubbles[square.name].mine"
+          v-if="bubbles[square.name].mine && bubbles[square.name].defended"
+          class="attacker-bubble mine shielded"
+          :title="`${bubbles[square.name].mine} of your pieces defend ${square.name}`"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+          </svg>
+          <span class="count">{{ bubbles[square.name].mine }}</span>
+        </span>
+        <span
+          v-else-if="bubbles[square.name].mine"
           class="attacker-bubble mine"
           :title="`${bubbles[square.name].mine} of your pieces attack ${square.name}`"
         >{{ bubbles[square.name].mine }}</span>
@@ -114,6 +125,32 @@ const squares = RANKS.flatMap((rank) =>
 .board .attacker-bubble.mine {
   left: 2px;
   background: #2e7d32;
+}
+.board .attacker-bubble.mine.shielded {
+  /* A green shield instead of a pill: same corner, a little taller. */
+  bottom: 1px;
+  left: 1px;
+  width: 19px;
+  height: 21px;
+  min-width: 0;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+.board .attacker-bubble.shielded svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: #2e7d32;
+  stroke: rgba(255, 255, 255, 0.9);
+  stroke-width: 1.5;
+}
+.board .attacker-bubble.shielded .count {
+  position: relative;
+  display: block;
+  font: 700 10px/19px sans-serif;
+  text-align: center;
 }
 .board .attacker-bubble.theirs {
   right: 2px;

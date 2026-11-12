@@ -15,6 +15,8 @@ export type ViewAs = 'auto' | PieceColor;
 export interface SquareBubbles {
   mine: number;
   theirs: number;
+  /** Your own piece stands here and at least one of yours covers it: the green bubble is defense. */
+  defended: boolean;
 }
 
 export interface Threat {
@@ -53,7 +55,14 @@ export function attackerBubbles(
   return Object.fromEntries(
     Object.entries(attackers)
       .filter(([square]) => mode === 'all' || position[square])
-      .map(([square, by]) => [square, { mine: by[me].length, theirs: by[other(me)].length }])
+      .map(([square, by]) => [
+        square,
+        {
+          mine: by[me].length,
+          theirs: by[other(me)].length,
+          defended: by[me].length > 0 && Boolean(position[square]?.startsWith(me)),
+        },
+      ])
   );
 }
 

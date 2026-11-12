@@ -26,6 +26,7 @@ Built on the main board instead of the separate mini board first planned, so the
 ### Attacker bubbles
 
 **Name:** the small green and red number circles in a square's bottom corners are **attacker bubbles**. Use that name in code, UI and docs.
+- **Shield:** when the square holds *your own* piece, the green bubble counts its defenders, so it's drawn as a green shield. On an enemy piece or an empty square, green means attack or control and stays a round bubble.
 
 - Each occupied square (by default; or every square) shows a **green** bubble at the bottom left (how many of **your** pieces attack it) and a **red** bubble at the bottom right (how many of the **opponent's** do). Zero is hidden. The corner position carries the meaning too, so color isn't the only signal.
 - Two dropdowns sit in a slim row above the board, over the "Black Player" bar (no card or header):
