@@ -32,19 +32,19 @@
       v-model="leftDrawerOpen"
       show-if-above
       bordered
+      :width="200"
     >
       <q-list>
-        <q-item-label
-          header
-        >
-          Essential Links
-        </q-item-label>
-
-        <EssentialLink
-          v-for="link in essentialLinks"
-          :key="link.title"
-          v-bind="link"
-        />
+        <q-item clickable :to="{ name: 'home' }" exact>
+          <q-item-section avatar><q-icon name="grid_on" /></q-item-section>
+          <q-item-section>Board</q-item-section>
+        </q-item>
+      </q-list>
+      <!-- Kept low-key at the bottom of the drawer: About holds credits and the fair-play policy. -->
+      <q-list class="drawer-footer">
+        <q-item clickable dense :to="{ name: 'about' }" data-testid="about-link">
+          <q-item-section class="text-caption text-grey-7">About</q-item-section>
+        </q-item>
       </q-list>
     </q-drawer>
 
@@ -57,7 +57,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import EssentialLink from 'components/EssentialLink.vue';
 import { useAuthStore } from 'stores/auth';
 
 const auth = useAuthStore();
@@ -68,73 +67,17 @@ async function logout() {
   await router.replace({ name: 'login' });
 }
 
-const essentialLinks = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev',
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework',
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev',
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev',
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev',
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev',
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev',
-  },
-];
-
 const leftDrawerOpen = ref(false)
 
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value;
 };
-//export default defineComponent({
-//  name: 'MainLayout',
-//
-//  components: {
-//    EssentialLink,
-//  },
-//
-//  setup () {
-//    const leftDrawerOpen = ref(false)
-//
-//    return {
-//      essentialLinks: linksList,
-//      leftDrawerOpen,
-//      toggleLeftDrawer () {
-//        leftDrawerOpen.value = !leftDrawerOpen.value
-//      },
-//    }
-//  },
-//});
 </script>
+
+<style scoped>
+.drawer-footer {
+  position: absolute;
+  bottom: 8px;
+  width: 100%;
+}
+</style>

@@ -12,7 +12,11 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', name: 'home', component: () => import('pages/IndexPage.vue') }],
+    children: [
+      { path: '', name: 'home', component: () => import('pages/IndexPage.vue') },
+      // Public: the fair-play policy should be readable before signing in.
+      { path: 'about', name: 'about', component: () => import('pages/AboutPage.vue'), meta: { public: true } },
+    ],
   },
   {
     // Bare board in its own tab: draws ?board= (FEN placement) and marks ?square=. It analyzes

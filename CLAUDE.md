@@ -33,6 +33,7 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
   - `src/components/ChessPiece.vue` keeps a `fileUrl` / `import.meta.url` reference line on purpose. Don't remove it.
   - `src/components/ChessBoard.vue`: 8x8 CSS grid; takes `position` (`{ e4: 'w_pawn', ... }`, default the starting position), `selected`, `highlights`, `check`, `targets` (preview dots) and `victims` (capture marks), and emits `square-click`
   - `src/components/attackMap.ts`: attack-count layer and threat list logic (`squareCounts`, `exchangeLoss`, `threatsTo`), fed by `useBoardHistory.attackers`. UI in `AttackControls.vue` (Counts / You are dropdowns) and `ThreatList.vue` (left of the board).
+  - `src/pages/AboutPage.vue` (`/#/about`, public): what BlunderProof is, credits, and the full fair-play policy. Linked low in the drawer. Its policy text mirrors `FAIR_PLAY.md`: update both together.
   - `src/pages/BattlePage.vue` (`/#/battle?board=<FEN placement>&square=`): a bare, control-less board in its own tab, opened by the eye button on a "Pieces under attack" row. It only draws the board it's given; the board page works out the battle (`battleOn`). Keep it analysis-free.
   - `src/components/movePreview.ts`: `previewArrows(from, moves)` turns `useBoardHistory.previewMoves(from)` into one arrow per direction (one per knight jump).
   - `src/components/BoardPiece.vue`: one board square (PNG background); `ChessPiece.vue`: one piece (PNG `<img>`)
