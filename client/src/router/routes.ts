@@ -19,6 +19,14 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    // The public front page: what BlunderProof is, a demo board, pricing. Logged-out visitors land here.
+    path: '/welcome',
+    component: () => import('layouts/BlankLayout.vue'),
+    children: [
+      { path: '', name: 'landing', component: () => import('pages/LandingPage.vue'), meta: { public: true } },
+    ],
+  },
+  {
     // First visit (or a new policy version): read the fair-play policy to the end and accept it.
     path: '/fair-play',
     component: () => import('layouts/BlankLayout.vue'),

@@ -23,7 +23,8 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
 
 - `client/`: Quasar app (Vite, TypeScript, `<script setup>`)
   - `src/pages/LoginPage.vue` (`/#/login`): a dev-only username/password box (shown when the server's `PASSWORD_LOGIN_ENABLED`) and a Google sign-in box (Google Identity Services, when `GOOGLE_CLIENT_ID` is set). The page reads both from `GET /api/auth/config/`.
-  - `src/router/index.ts`: a guard sends logged-out users to `/login`. Routes are login-only unless `meta.public`.
+  - `src/router/index.ts`: a guard sends logged-out users who open the site (`/`) to the front page (`/#/welcome`) and deeper links to `/login`. Routes are login-only unless `meta.public`.
+  - `src/pages/LandingPage.vue` (`/#/welcome`, public): the front page for new visitors: pitch, a non-interactive demo board (`components/LandingDemoBoard.vue`, computed by the app's own preview and bubble code), the four tools, $5 pricing (payment not built yet), and the fair-play line.
   - `src/stores/auth/index.ts`: Pinia auth store (`fetchMe`, `login`, `googleLogin`, `logout`); session cookies plus CSRF.
   - Stores live in `src/stores/`, one folder per group (`auth/`, `board/`, ...); read `src/stores/CONTEXT.md` before adding state. Always create distinct, encapsulated groups for parts of the app; never pile unrelated state into one store. `quasar.config.js` sets `sourceFiles.store: 'src/stores/index'`. Without it Quasar 1.x looks for `src/store/` and never installs Pinia. The router guard calls `useAuthStore(store)` with the instance Quasar passes in.
   - `src/pages/IndexPage.vue`: the board plus two control cards: **Moves** (start/back/forward/end, move list, arrow keys) and **Arrows (testing)** (draw by squares, sample set, undo, clear). The page keeps only layout, click-to-move and keyboard shortcuts; each piece is its own component so parallel work doesn't collide in one file.

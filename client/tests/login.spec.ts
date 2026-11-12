@@ -1,10 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { mockAuthApi } from './mockApi';
 
-test('logged-out users are sent to the login page with both boxes', async ({ page }) => {
+test('logged-out users land on the front page, then sign in with both boxes', async ({ page }) => {
   await mockAuthApi(page, { loggedIn: false });
   await page.goto('/');
 
+  await expect(page).toHaveURL(/#\/welcome/);
+  await page.getByTestId('landing-sign-in').click();
   await expect(page).toHaveURL(/#\/login/);
   await expect(page.getByTestId('dev-login')).toBeVisible();
   await expect(page.getByTestId('google-login')).toBeVisible();

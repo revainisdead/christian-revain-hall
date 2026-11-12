@@ -44,7 +44,8 @@ export default route(function ({ store }) {
       return to.name === 'login' && auth.isLoggedIn ? { name: 'home' } : true;
     }
     if (!auth.isLoggedIn) {
-      return { name: 'login', query: { next: to.fullPath } };
+      // Opening the site lands on the front page; deeper links go to sign-in and come back.
+      return to.name === 'home' ? { name: 'landing' } : { name: 'login', query: { next: to.fullPath } };
     }
     // Everyone accepts the current fair-play policy before using the app.
     const accepted = auth.user?.fair_play_accepted;

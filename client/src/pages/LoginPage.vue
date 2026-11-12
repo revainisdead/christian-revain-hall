@@ -1,7 +1,9 @@
 <template>
   <q-page class="login-page flex flex-center">
     <div class="column items-center q-gutter-y-lg">
-      <h1 class="text-h4 q-my-none">BlunderProof</h1>
+      <h1 class="text-h4 q-my-none">
+        <router-link :to="{ name: 'landing' }" class="home-link">BlunderProof</router-link>
+      </h1>
 
       <div class="login-boxes">
         <!-- Local username/password login: development only (server: PASSWORD_LOGIN_ENABLED) -->
@@ -191,5 +193,12 @@ onMounted(async () => {
 }
 .google-slot {
   min-height: 160px;
+}
+</style>
+
+<style scoped>
+.home-link {
+  color: inherit;
+  text-decoration: none;
 }
 </style>
