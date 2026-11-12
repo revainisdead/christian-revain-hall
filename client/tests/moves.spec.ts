@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { mockAuthApi } from './mockApi';
-
-const sq = (name: string) => `[data-square="${name}"]`;
+import { play, sq } from './play';
+import sampleGame from '../src/samples/sample-game.json';
 
 test.beforeEach(async ({ page }) => {
   await mockAuthApi(page, { loggedIn: true });
@@ -48,4 +48,35 @@ test('arrow controls draw and clear arrows', async ({ page }) => {
 
   await page.getByTestId('arrow-clear').click();
   await expect(overlay).toHaveAttribute('data-arrow-count', '0');
+});
+
+test('move list: one line per move, about five lines tall, current move kept in view', async ({
+  page,
+}) => {
+  // The first 8 moves of the sample game (checked with python-chess).
+  await play(page, sampleGame.moves.slice(0, 16));
+
+  const list = page.getByTestId('move-list');
+  const rows = page.getByTestId('move-row');
+  await expect(rows).toHaveCount(8);
+  await expect(rows.first()).toHaveText('1. e4 e5');
+  await expect(rows.nth(7)).toHaveText('8. Nc3 c6');
+
+  const inView = (i: number) =>
+    list.evaluate((box, n) => {
+      const row = box.querySelectorAll<HTMLElement>('[data-testid="move-row"]')[n];
+      return (
+        row.offsetTop >= box.scrollTop &&
+        row.offsetTop + row.offsetHeight <= box.scrollTop + box.clientHeight
+      );
+    }, i);
+
+  // Capped height: it scrolls, the newest move is visible and the first one isn't.
+  expect(await list.evaluate((box) => box.scrollHeight > box.clientHeight)).toBe(true);
+  await expect.poll(() => inView(7)).toBe(true);
+  expect(await inView(0)).toBe(false);
+
+  // Jumping to the start scrolls back up.
+  await page.keyboard.press('Home');
+  await expect.poll(() => inView(0)).toBe(true);
 });

@@ -58,29 +58,69 @@
       />
     </q-card-section>
 
-    <q-card-section class="q-pt-none move-list" data-testid="move-list">
-      <span v-if="!game.moves.value.length" class="text-grey-7">
-        Click a piece, then a square.
-      </span>
-      <span
-        v-for="(m, i) in game.moves.value"
-        :key="i"
-        class="move"
-        :class="{ current: i + 1 === game.ply.value }"
-        @click="game.goTo(i + 1)"
-      >
-        <span v-if="i % 2 === 0" class="text-grey-7">{{ i / 2 + 1 }}.</span>
-        {{ m }}
-      </span>
+    <!-- One line per move ("1. e4 e5"), about 5 lines tall; scrolls to keep the current move in view. -->
+    <q-card-section class="q-pt-none">
+      <div ref="list" class="move-list" data-testid="move-list">
+        <span v-if="!rows.length" class="text-grey-7">Click a piece, then a square.</span>
+        <div v-for="row in rows" :key="row.number" class="move-row" data-testid="move-row">
+          <span class="num text-grey-7">{{ row.number }}.</span>{{ ' ' }}
+          <span
+            v-for="half in row.plies"
+            :key="half.ply"
+            class="move"
+            :class="{ current: half.ply === game.ply.value }"
+            @click="game.goTo(half.ply)"
+          >{{ half.san }}{{ ' ' }}</span>
+        </div>
+      </div>
     </q-card-section>
   </q-card>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { BoardHistory } from 'components/useBoardHistory';
 
 const props = defineProps<{ game: BoardHistory }>();
+
+/** Moves paired per line: { number, plies: [White's, Black's?] }, each with its ply for goTo. */
+const rows = computed(() =>
+  props.game.moves.value
+    .map((san, i) => ({ san, ply: i + 1 }))
+    .reduce<{ number: number; plies: { san: string; ply: number }[] }[]>(
+      (acc, half, i) =>
+        i % 2 === 0
+          ? [...acc, { number: i / 2 + 1, plies: [half] }]
+          : [...acc.slice(0, -1), { ...acc[acc.length - 1], plies: [...acc[acc.length - 1].plies, half] }],
+      []
+    )
+);
+
+// Keep the current move's line in view: new moves scroll down, stepping back scrolls up.
+const list = ref<HTMLElement | null>(null);
+watch(
+  () => [props.game.ply.value, props.game.moves.value.length],
+  async () => {
+    await nextTick();
+    const box = list.value;
+    const line = box?.querySelector('.move.current')?.closest('.move-row') as HTMLElement | null;
+    if (!box) {
+      return;
+    }
+    if (!line) {
+      box.scrollTop = 0;
+      return;
+    }
+    const top = line.offsetTop;
+    const bottom = top + line.offsetHeight;
+    if (top < box.scrollTop) {
+      box.scrollTop = top;
+    } else if (bottom > box.scrollTop + box.clientHeight) {
+      box.scrollTop = bottom - box.clientHeight;
+    }
+  },
+  { immediate: true }
+);
 
 const whiteToMove = computed(
   () => !props.game.status.value.over && props.game.sideToMove.value === 'w'
@@ -101,12 +141,19 @@ const resultText = computed(() => {
 
 <style scoped>
 .move-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 10px;
+  position: relative; /* offsetTop of each line is measured from here */
+  max-height: calc(5 * 26px); /* about 5 moves in view */
+  overflow-y: auto;
   font-family: monospace;
 }
+.move-row {
+  display: grid;
+  grid-template-columns: 3em 1fr 1fr;
+  align-items: center;
+  height: 26px;
+}
 .move-list .move {
+  justify-self: start; /* highlight hugs the move, not the whole column */
   cursor: pointer;
   padding: 0 2px;
   border-radius: 3px;
