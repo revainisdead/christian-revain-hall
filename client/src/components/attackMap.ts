@@ -3,13 +3,16 @@ import { PieceCode, PieceColor, PieceRole, Position } from 'components/chessAsse
 /** Attacking squares per side for every square of the board (from chess.js `attackers`). */
 export type AttackerMap = Record<string, Record<PieceColor, string[]>>;
 
-/** Attack-count layer: off, counts only where a piece stands, or on every square. */
-export type CountMode = 'off' | 'occupied' | 'all';
+/**
+ * Attacker bubbles: the green (yours) and red (theirs) number circles in a square's bottom
+ * corners, counting the pieces that attack it. Shown on occupied squares, every square, or off.
+ */
+export type BubbleMode = 'off' | 'occupied' | 'all';
 
 /** Whose side "you" are: the side to move, or a fixed color. */
 export type ViewAs = 'auto' | PieceColor;
 
-export interface SquareCount {
+export interface SquareBubbles {
   mine: number;
   theirs: number;
 }
@@ -37,13 +40,13 @@ const roleOf = (piece: PieceCode) => piece.split('_')[1] as PieceRole;
 const valuesOn = (position: Position, squares: string[]) =>
   squares.map((s) => PIECE_VALUE[roleOf(position[s])]).sort((a, b) => a - b);
 
-/** Green (yours) and red (theirs) attacker counts per square, filtered by the layer mode. */
-export function squareCounts(
+/** Attacker bubbles per square: green = your attackers, red = theirs, filtered by the mode. */
+export function attackerBubbles(
   attackers: AttackerMap,
   position: Position,
   me: PieceColor,
-  mode: CountMode
-): Record<string, SquareCount> {
+  mode: BubbleMode
+): Record<string, SquareBubbles> {
   if (mode === 'off') {
     return {};
   }

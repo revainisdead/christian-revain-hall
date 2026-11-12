@@ -89,7 +89,7 @@ The aim is to go from "draws a red line" to a small, reliable rendering layer th
 
 ### Step 6: Attacker counts (training tool 2)
 
-- **Done:** corner counts on the main board with a Counts dropdown (all, pieces only, off) and a "You are" dropdown, plus the "Pieces under attack" list left of the board. See [attack-map-plan.md](attack-map-plan.md) part 2. Square tints are next.
+- **Done:** attacker bubbles on the main board (green yours, red theirs) with a "Show on" dropdown (pieces only by default, all squares, off) and a "You are" dropdown, plus the "Pieces under attack" list left of the board. See [attack-map-plan.md](attack-map-plan.md) part 2. Square tints are next.
 
 - Green count at the bottom left (yours) and red at the bottom right (the opponent's) on each square, using the definitions in the training-tool plan.
 - Square tints when nothing is selected.

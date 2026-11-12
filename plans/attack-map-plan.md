@@ -1,6 +1,6 @@
 # Attack Map Plan
 
-Status: parts 1 (move preview with capture marks) and 2 (attack layer and threat list) done on `develop` (2026-11-11). This plan expands training tool 1a and training tool 2 from [training-tool-plan.md](training-tool-plan.md) and UI plan steps 5 and 6 from [ui-plan.md](ui-plan.md).
+Status: parts 1 (move preview with capture marks) and 2 (attacker bubbles and threat list) done on `develop` (2026-11-11). This plan expands training tool 1a and training tool 2 from [training-tool-plan.md](training-tool-plan.md) and UI plan steps 5 and 6 from [ui-plan.md](ui-plan.md).
 
 ## Part 1: Move preview (done)
 
@@ -19,15 +19,17 @@ Code:
 - `ChessBoard` takes `targets` (dots) and `victims` (destruction marks). `ChessOverlay` styles arrows by `kind` (`test`, `preview`) and exposes `data-arrows` (a sorted JSON list of `from-to-kind`) for tests.
 - Tests: `tests/preview.spec.ts` (knight, pawn push, rook line stopping at an enemy, bishop capture, queen with three victims, en passant victim, clearing on navigation). The positions were checked with python-chess.
 
-## Part 2: Attack layer and threat list (done)
+## Part 2: Attacker bubbles and threat list (done)
 
 Built on the main board instead of the separate mini board first planned, so the counts sit on the real pieces.
 
-### Attack layer
+### Attacker bubbles
 
-- Every square shows a **green** count at the bottom left (how many of **your** pieces attack it) and a **red** count at the bottom right (how many of the **opponent's** do). Zero is hidden. The corner position carries the meaning too, so color isn't the only signal.
-- An **Attack layer** card (right column) holds two dropdowns:
-  - **Counts:** All squares (default), Pieces only, Off. Off clears the board for clean viewing.
+**Name:** the small green and red number circles in a square's bottom corners are **attacker bubbles**. Use that name in code, UI and docs.
+
+- Each occupied square (by default; or every square) shows a **green** bubble at the bottom left (how many of **your** pieces attack it) and a **red** bubble at the bottom right (how many of the **opponent's** do). Zero is hidden. The corner position carries the meaning too, so color isn't the only signal.
+- An **Attacker bubbles** card (right column) holds two dropdowns:
+  - **Show on:** Pieces only (default: occupied squares only), All squares, Off. Off clears the board for clean viewing.
   - **You are:** Side to move (default), White, Black. Until saved games record your color (UI plan step 3), "you" is the side to move, so green and red swap each move. Picking a color pins them. Step 3 can default this to `user_color`.
 - The counts follow history navigation, since they're computed from the shown position.
 
@@ -53,9 +55,9 @@ chess.js `attackers()` follows exactly these rules, the same as python-chess `bo
 ### Code
 
 - `useBoardHistory.attackers`: `{ [square]: { w: string[]; b: string[] } }` for the shown position.
-- `components/attackMap.ts`: `squareCounts` (layer data per mode), `exchangeLoss` (the battle), `threatsTo` (the top-5 list), `PIECE_VALUE`.
-- `ChessBoard` takes `counts` and renders the corner badges. Squares expose `data-attackers-mine` / `data-attackers-theirs` for tests.
-- `components/AttackControls.vue` (the dropdowns) and `components/ThreatList.vue` (rows expose `data-threat-square` and `data-loss`).
+- `components/attackMap.ts`: `attackerBubbles` (bubbles per square for the mode), `exchangeLoss` (the battle), `threatsTo` (the top-5 list), `PIECE_VALUE`.
+- `ChessBoard` takes `bubbles` and renders them (`.attacker-bubble.mine` / `.theirs`). Squares expose `data-attackers-mine` / `data-attackers-theirs` for tests.
+- `components/AttackerBubbleControls.vue` (the dropdowns) and `components/ThreatList.vue` (rows expose `data-threat-square` and `data-loss`).
 - Tests: `tests/attackMap.spec.ts`. All counts and losses there were computed with python-chess.
 
 ### Next
@@ -80,4 +82,4 @@ Next: step through the captures one at a time, and predict-then-reveal (see the 
 
 ## Fair play
 
-The preview, the attack layer and the threat list read only positions played on BlunderProof's own board (the local game, the sample game, saved games). There's no way to enter an outside position (no FEN or PGN paste), and the map shows counts, not moves or evaluations. See [FAIR_PLAY.md](../FAIR_PLAY.md).
+The preview, the attacker bubbles and the threat list read only positions played on BlunderProof's own board (the local game, the sample game, saved games). There's no way to enter an outside position (no FEN or PGN paste), and the map shows counts, not moves or evaluations. See [FAIR_PLAY.md](../FAIR_PLAY.md).

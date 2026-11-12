@@ -12,26 +12,26 @@
         'move-target': targets.includes(square.name) && !victims.includes(square.name),
         'capture-target': victims.includes(square.name),
       }"
-      :data-attackers-mine="counts[square.name]?.mine"
-      :data-attackers-theirs="counts[square.name]?.theirs"
+      :data-attackers-mine="bubbles[square.name]?.mine"
+      :data-attackers-theirs="bubbles[square.name]?.theirs"
       @click="emit('square-click', square.name)"
     >
       <ChessPiece
         v-if="position[square.name]"
         :piece="position[square.name]"
       />
-      <!-- Attack counts: yours bottom-left (green), the opponent's bottom-right (red). -->
-      <template v-if="counts[square.name]">
+      <!-- Attacker bubbles: yours bottom-left (green), the opponent's bottom-right (red). -->
+      <template v-if="bubbles[square.name]">
         <span
-          v-if="counts[square.name].mine"
-          class="attack-count mine"
-          :title="`${counts[square.name].mine} of your pieces attack ${square.name}`"
-        >{{ counts[square.name].mine }}</span>
+          v-if="bubbles[square.name].mine"
+          class="attacker-bubble mine"
+          :title="`${bubbles[square.name].mine} of your pieces attack ${square.name}`"
+        >{{ bubbles[square.name].mine }}</span>
         <span
-          v-if="counts[square.name].theirs"
-          class="attack-count theirs"
-          :title="`${counts[square.name].theirs} opponent pieces attack ${square.name}`"
-        >{{ counts[square.name].theirs }}</span>
+          v-if="bubbles[square.name].theirs"
+          class="attacker-bubble theirs"
+          :title="`${bubbles[square.name].theirs} opponent pieces attack ${square.name}`"
+        >{{ bubbles[square.name].theirs }}</span>
       </template>
     </BoardPiece>
   </div>
@@ -41,7 +41,7 @@
 import BoardPiece from 'components/BoardPiece.vue';
 import ChessPiece from 'components/ChessPiece.vue';
 import { FILES, RANKS, Position, startingPosition } from 'components/chessAssets';
-import { SquareCount } from 'components/attackMap';
+import { SquareBubbles } from 'components/attackMap';
 
 interface Props {
   position?: Position;
@@ -50,7 +50,7 @@ interface Props {
   check?: string | null;
   targets?: string[]; // move preview: where the selected piece can go
   victims?: string[]; // move preview: enemy pieces it could capture (marked for destruction)
-  counts?: Record<string, SquareCount>; // attack-count layer; squares left out show nothing
+  bubbles?: Record<string, SquareBubbles>; // attacker bubbles; squares left out show none
 }
 withDefaults(defineProps<Props>(), {
   position: () => startingPosition(),
@@ -59,7 +59,7 @@ withDefaults(defineProps<Props>(), {
   check: null,
   targets: () => [],
   victims: () => [],
-  counts: () => ({}),
+  bubbles: () => ({}),
 });
 
 const emit = defineEmits<{ (e: 'square-click', square: string): void }>();
@@ -96,8 +96,8 @@ const squares = RANKS.flatMap((rank) =>
   box-shadow: inset 0 0 0 100px rgba(255, 214, 0, 0.6);
 }
 
-/* Attack-count badges, above the piece and the preview marks. */
-.board .attack-count {
+/* Attacker bubbles, above the piece and the preview marks. */
+.board .attacker-bubble {
   position: absolute;
   bottom: 2px;
   z-index: 2;
@@ -111,11 +111,11 @@ const squares = RANKS.flatMap((rank) =>
   pointer-events: none;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
 }
-.board .attack-count.mine {
+.board .attacker-bubble.mine {
   left: 2px;
   background: #2e7d32;
 }
-.board .attack-count.theirs {
+.board .attacker-bubble.theirs {
   right: 2px;
   background: #c62828;
 }

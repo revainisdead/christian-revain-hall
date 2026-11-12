@@ -42,30 +42,35 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/');
 });
 
-test('starting position: green and red counts per square', async ({ page }) => {
-  await expectCounts(page, 'f3', 3, 0);
+test('attacker bubbles show on occupied squares only by default', async ({ page }) => {
   await expectCounts(page, 'e2', 4, 0);
-  await expectCounts(page, 'c6', 0, 3);
-  await expect(page.locator(`${sq('f3')} .attack-count.mine`)).toHaveText('3');
-  await expect(page.locator(`${sq('f3')} .attack-count.theirs`)).toHaveCount(0); // zero is hidden
-  await expect(page.locator(`${sq('c6')} .attack-count.theirs`)).toHaveText('3');
+  await expectCounts(page, 'd1', 1, 0);
+  await expectCounts(page, 'f3', null, null); // empty square: no bubbles
+  await expect(page.locator(`${sq('e2')} .attacker-bubble.mine`)).toHaveText('4');
+  await expect(page.locator(`${sq('e2')} .attacker-bubble.theirs`)).toHaveCount(0); // zero is hidden
   await expect(page.getByTestId('threat-empty')).toBeVisible();
 });
 
-test('the dropdown switches to pieces only, then off', async ({ page }) => {
-  await pick(page, 'attack-mode', 'Pieces only');
-  await expectCounts(page, 'f3', null, null); // empty square
-  await expectCounts(page, 'd1', 1, 0);
+test('all squares: green and red bubbles on empty squares too', async ({ page }) => {
+  await pick(page, 'bubble-mode', 'All squares');
+  await expectCounts(page, 'f3', 3, 0);
+  await expectCounts(page, 'e2', 4, 0);
+  await expectCounts(page, 'c6', 0, 3);
+  await expect(page.locator(`${sq('f3')} .attacker-bubble.mine`)).toHaveText('3');
+  await expect(page.locator(`${sq('f3')} .attacker-bubble.theirs`)).toHaveCount(0); // zero is hidden
+  await expect(page.locator(`${sq('c6')} .attacker-bubble.theirs`)).toHaveText('3');
+});
 
-  await pick(page, 'attack-mode', 'Off');
+test('the dropdown turns attacker bubbles off', async ({ page }) => {
+  await pick(page, 'bubble-mode', 'Off');
   await expectCounts(page, 'd1', null, null);
-  await expect(page.locator('.attack-count')).toHaveCount(0);
+  await expect(page.locator('.attacker-bubble')).toHaveCount(0);
 });
 
 test('viewing as Black swaps green and red', async ({ page }) => {
-  await pick(page, 'attack-view-as', 'Black');
-  await expectCounts(page, 'c6', 3, 0);
-  await expectCounts(page, 'f3', 0, 3);
+  await pick(page, 'bubble-view-as', 'Black');
+  await expectCounts(page, 'e2', 0, 4);
+  await expectCounts(page, 'd8', 1, 0);
 });
 
 test('an undefended pawn is losing -1', async ({ page }) => {

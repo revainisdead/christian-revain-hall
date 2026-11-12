@@ -14,7 +14,7 @@
           :check="game.checkSquare.value"
           :targets="preview.map((m) => m.to)"
           :victims="preview.flatMap((m) => (m.victim ? [m.victim] : []))"
-          :counts="counts"
+          :bubbles="bubbles"
           @square-click="onSquareClick"
         />
         <ChessOverlay :arrows="overlayArrows" />
@@ -25,7 +25,7 @@
 
     <div class="column q-gutter-y-md side-panels">
       <MoveControls :game="game" />
-      <AttackControls v-model:mode="countMode" v-model:view-as="viewAs" />
+      <AttackerBubbleControls v-model:mode="bubbleMode" v-model:view-as="viewAs" />
       <ArrowControls v-model:arrows="arrows" :last-move="game.lastMove.value" />
     </div>
 
@@ -37,7 +37,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import ArrowControls from 'components/ArrowControls.vue';
-import AttackControls from 'components/AttackControls.vue';
+import AttackerBubbleControls from 'components/AttackerBubbleControls.vue';
 import ChessBoard from 'components/ChessBoard.vue';
 import ChessOverlay from 'components/ChessOverlay.vue';
 import MoveControls from 'components/MoveControls.vue';
@@ -47,7 +47,7 @@ import ThreatList from 'components/ThreatList.vue';
 import TruncateDialog from 'components/TruncateDialog.vue';
 import { Arrow, PieceColor } from 'components/chessAssets';
 import { useRouter } from 'vue-router';
-import { CountMode, ViewAs, battleOn, squareCounts, threatsTo } from 'components/attackMap';
+import { BubbleMode, ViewAs, battleOn, attackerBubbles, threatsTo } from 'components/attackMap';
 import { toPlacement } from 'components/chessAssets';
 import { previewArrows } from 'components/movePreview';
 import { PromotionRole, useBoardHistory } from 'components/useBoardHistory';
@@ -74,11 +74,12 @@ const overlayArrows = computed(() => [
   ...arrows.value,
 ]);
 // Attack layer and threat list. "You" is the side to move unless a color is picked.
-const countMode = ref<CountMode>('all');
+// Attacker bubbles show on occupied squares by default; the dropdown can switch to all or off.
+const bubbleMode = ref<BubbleMode>('occupied');
 const viewAs = ref<ViewAs>('auto');
 const me = computed<PieceColor>(() => (viewAs.value === 'auto' ? game.sideToMove.value : viewAs.value));
-const counts = computed(() =>
-  squareCounts(game.attackers.value, game.position.value, me.value, countMode.value)
+const bubbles = computed(() =>
+  attackerBubbles(game.attackers.value, game.position.value, me.value, bubbleMode.value)
 );
 const threats = computed(() => threatsTo(game.attackers.value, game.position.value, me.value));
 
