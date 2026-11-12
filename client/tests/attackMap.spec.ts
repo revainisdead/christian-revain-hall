@@ -101,7 +101,7 @@ test('an even fight holds, a hanging bishop does not', async ({ page }) => {
   await expect(rows(page).nth(1)).toContainText('Holds');
 });
 
-test('a green bubble on your own piece is a shield (defense); on theirs it stays a bubble', async ({
+test('defense is a shield: green on your pieces, red on theirs; attacks stay round', async ({
   page,
 }) => {
   // 1. e4 d5, White to move (python-chess): d1 queen covered once, d5 black pawn attacked once.
@@ -111,8 +111,15 @@ test('a green bubble on your own piece is a shield (defense); on theirs it stays
 
   await expectCounts(page, 'd5', 1, 1);
   await expect(page.locator(`${sq('d5')} .attacker-bubble.mine`)).toHaveText('1');
-  await expect(page.locator(`${sq('d5')} .attacker-bubble.shielded`)).toHaveCount(0);
+  await expect(page.locator(`${sq('d5')} .attacker-bubble.mine.shielded`)).toHaveCount(0); // you attack it
 
   await expectCounts(page, 'e4', 0, 1); // your pawn, no defender: no green, no shield
   await expect(page.locator(`${sq('e4')} .attacker-bubble.mine`)).toHaveCount(0);
+
+  // Red mirrors green: on their piece it's their defense (a red shield), on yours an attack.
+  await expect(page.locator(`${sq('d5')} .attacker-bubble.theirs.shielded`)).toHaveText('1');
+  await expectCounts(page, 'd8', 0, 1);
+  await expect(page.locator(`${sq('d8')} .attacker-bubble.theirs.shielded`)).toHaveText('1');
+  await expect(page.locator(`${sq('e4')} .attacker-bubble.theirs`)).toHaveText('1');
+  await expect(page.locator(`${sq('e4')} .attacker-bubble.shielded`)).toHaveCount(0);
 });

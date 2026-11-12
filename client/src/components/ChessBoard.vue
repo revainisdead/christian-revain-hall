@@ -24,7 +24,7 @@
       <template v-if="bubbles[square.name]">
         <!-- On your own piece the green bubble is defense: drawn as a shield. -->
         <span
-          v-if="bubbles[square.name].mine && bubbles[square.name].defended"
+          v-if="bubbles[square.name].mine && bubbles[square.name].mineShield"
           class="attacker-bubble mine shielded"
           :title="`${bubbles[square.name].mine} of your pieces defend ${square.name}`"
         >
@@ -38,8 +38,19 @@
           class="attacker-bubble mine"
           :title="`${bubbles[square.name].mine} of your pieces attack ${square.name}`"
         >{{ bubbles[square.name].mine }}</span>
+        <!-- Mirror image: on their piece the red bubble is their defense: a red shield. -->
         <span
-          v-if="bubbles[square.name].theirs"
+          v-if="bubbles[square.name].theirs && bubbles[square.name].theirsShield"
+          class="attacker-bubble theirs shielded"
+          :title="`${bubbles[square.name].theirs} opponent pieces defend ${square.name}`"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+          </svg>
+          <span class="count">{{ bubbles[square.name].theirs }}</span>
+        </span>
+        <span
+          v-else-if="bubbles[square.name].theirs"
           class="attacker-bubble theirs"
           :title="`${bubbles[square.name].theirs} opponent pieces attack ${square.name}`"
         >{{ bubbles[square.name].theirs }}</span>
@@ -126,10 +137,14 @@ const squares = RANKS.flatMap((rank) =>
   left: 2px;
   background: #2e7d32;
 }
-.board .attacker-bubble.mine.shielded {
-  /* A green shield instead of a pill: same corner, a little taller. */
+.board .attacker-bubble.theirs {
+  right: 2px;
+  background: #c62828;
+}
+/* Shields come after the pill colors so their overrides win. */
+.board .attacker-bubble.shielded {
+  /* A shield instead of a pill: same corner, a little taller. */
   bottom: 1px;
-  left: 1px;
   width: 19px;
   height: 21px;
   min-width: 0;
@@ -137,24 +152,31 @@ const squares = RANKS.flatMap((rank) =>
   background: none;
   box-shadow: none;
 }
+.board .attacker-bubble.mine.shielded {
+  left: 1px;
+}
+.board .attacker-bubble.theirs.shielded {
+  right: 1px;
+}
 .board .attacker-bubble.shielded svg {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  fill: #2e7d32;
   stroke: rgba(255, 255, 255, 0.9);
   stroke-width: 1.5;
+}
+.board .attacker-bubble.mine.shielded svg {
+  fill: #2e7d32;
+}
+.board .attacker-bubble.theirs.shielded svg {
+  fill: #c62828;
 }
 .board .attacker-bubble.shielded .count {
   position: relative;
   display: block;
   font: 700 10px/19px sans-serif;
   text-align: center;
-}
-.board .attacker-bubble.theirs {
-  right: 2px;
-  background: #c62828;
 }
 
 /* Move preview: a red dot on each quiet destination. */
