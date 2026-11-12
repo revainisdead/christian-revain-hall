@@ -31,6 +31,19 @@
     </q-card-section>
 
     <q-card-actions>
+      <q-btn
+        dense
+        unelevated
+        :color="allMoves ? 'primary' : 'grey-3'"
+        :text-color="allMoves ? 'white' : 'grey-9'"
+        icon="open_with"
+        label="All moves"
+        data-testid="all-moves"
+        :aria-pressed="allMoves"
+        @click="emit('update:allMoves', !allMoves)"
+      >
+        <q-tooltip>Experimental: every piece's moves, white and black</q-tooltip>
+      </q-btn>
       <q-btn dense flat label="Sample set" @click="drawSamples" />
       <q-btn dense flat label="Last move" :disable="!lastMove" @click="drawLastMove" />
       <q-btn
@@ -60,8 +73,12 @@ import { Arrow } from 'components/chessAssets';
 const props = defineProps<{
   arrows: Arrow[];
   lastMove: { from: string; to: string } | null;
+  allMoves: boolean;
 }>();
-const emit = defineEmits<{ (e: 'update:arrows', arrows: Arrow[]): void }>();
+const emit = defineEmits<{
+  (e: 'update:arrows', arrows: Arrow[]): void;
+  (e: 'update:allMoves', on: boolean): void;
+}>();
 
 const arrowFrom = ref('e2');
 const arrowTo = ref('e4');

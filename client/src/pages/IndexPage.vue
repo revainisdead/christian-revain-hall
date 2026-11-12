@@ -26,7 +26,11 @@
     <div class="column q-gutter-y-md side-panels">
       <MoveControls :game="game" />
       <AttackerBubbleControls v-model:mode="bubbleMode" v-model:view-as="viewAs" />
-      <ArrowControls v-model:arrows="arrows" :last-move="game.lastMove.value" />
+      <ArrowControls
+        v-model:arrows="arrows"
+        v-model:all-moves="allMoves"
+        :last-move="game.lastMove.value"
+      />
     </div>
 
     <PromotionDialog ref="promotionDialog" :color="game.sideToMove.value" />
@@ -69,7 +73,19 @@ const isTurn = (color: 'w' | 'b') => !game.status.value.over && game.sideToMove.
 const turnClass = computed(() => (game.status.value.over ? 'game-over' : `turn-${game.sideToMove.value}`));
 // Move preview: the selected piece's legal destinations (arrows, dots, capture marks).
 const preview = computed(() => (selected.value ? game.previewMoves(selected.value) : []));
+// Experimental "All moves": every piece's moves at once, white and black (drawn underneath).
+const allMoves = ref(false);
+const allMoveArrows = computed(() =>
+  allMoves.value
+    ? (['w', 'b'] as const).flatMap((color) =>
+        Object.entries(game.reachFor(color)).flatMap(([from, moves]) =>
+          previewArrows(from, moves, color === 'w' ? 'all-w' : 'all-b')
+        )
+      )
+    : []
+);
 const overlayArrows = computed(() => [
+  ...allMoveArrows.value,
   ...(selected.value ? previewArrows(selected.value, preview.value) : []),
   ...arrows.value,
 ]);

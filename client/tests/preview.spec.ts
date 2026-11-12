@@ -84,3 +84,22 @@ test('stepping back through history clears the preview', async ({ page }) => {
   await page.keyboard.press('ArrowLeft');
   await expectArrows(page, []);
 });
+
+test('All moves (experimental): every piece, white and black, as wide 50% arrows', async ({ page }) => {
+  // Start position (python-chess): 20 moves a side, 12 arrows each once pawn pushes merge.
+  await page.getByTestId('all-moves').click();
+  await expect.poll(async () => (await arrowsOf(page)).length).toBe(24);
+  const arrows = await arrowsOf(page);
+  expect(arrows.filter((a) => a.endsWith('-all-w'))).toHaveLength(12);
+  expect(arrows.filter((a) => a.endsWith('-all-b'))).toHaveLength(12);
+  expect(arrows).toContain('b1-c3-all-w');
+  expect(arrows).toContain('e2-e4-all-w');
+  expect(arrows).toContain('g8-f6-all-b');
+  expect(arrows).toContain('d7-d5-all-b');
+
+  // A selected piece's preview draws on top; turning it off leaves only the preview.
+  await page.locator(sq('g1')).click();
+  await expect.poll(async () => (await arrowsOf(page)).length).toBe(26);
+  await page.getByTestId('all-moves').click();
+  await expectArrows(page, ['g1-f3-preview', 'g1-h3-preview']);
+});

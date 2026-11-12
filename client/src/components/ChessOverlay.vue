@@ -28,6 +28,9 @@ const SQUARE = SIZE / 8;
 const STYLE: Record<ArrowKind, { color: string; width: number; head: number }> = {
   test: { color: 'rgba(220, 30, 30, 0.85)', width: 6, head: 12 },
   preview: { color: 'rgba(200, 20, 20, 0.6)', width: 5, head: 11 },
+  // All-moves experiment: 50% white / 50% black, and wider so the faint lines still read.
+  'all-w': { color: 'rgba(255, 255, 255, 0.5)', width: 9, head: 16 },
+  'all-b': { color: 'rgba(0, 0, 0, 0.5)', width: 9, head: 16 },
 };
 
 /** For tests: a JSON list of `from-to-kind`, sorted. */

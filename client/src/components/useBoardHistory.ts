@@ -150,12 +150,12 @@ export function useBoardHistory(startFen: string = DEFAULT_POSITION) {
    * `victim` is the square of the enemy piece the move would capture: the target square,
    * or for en passant the pawn beside it.
    */
-  function previewMoves(from: string): PreviewMove[] {
+  function previewMoves(from: string, game: Chess = current.value): PreviewMove[] {
     if (status.value.over) {
       return [];
     }
     const byTarget = new Map<string, PreviewMove>();
-    current.value.moves({ square: from as Square, verbose: true }).forEach((m) => {
+    game.moves({ square: from as Square, verbose: true }).forEach((m) => {
       let victim: string | null = null;
       if (m.isEnPassant()) {
         victim = `${m.to[0]}${m.from[1]}`;
@@ -165,6 +165,31 @@ export function useBoardHistory(startFen: string = DEFAULT_POSITION) {
       byTarget.set(m.to, { to: m.to, victim });
     });
     return [...byTarget.values()];
+  }
+
+  /**
+   * Every piece of one color and its preview moves: `{ [from]: PreviewMove[] }`. For the side
+   * not to move these are the moves it would have if it were its turn (same position, turn
+   * switched, no en passant). If the side to move is in check, the other side's moves include
+   * "taking" the king: an arrow along the checking line, which is worth seeing here.
+   */
+  function reachFor(color: 'w' | 'b'): Record<string, PreviewMove[]> {
+    const game = current.value;
+    let board = game;
+    if (color !== game.turn()) {
+      const [placement, , castling, , halfmove, fullmove] = game.fen().split(' ');
+      try {
+        board = new Chess([placement, color, castling, '-', halfmove, fullmove].join(' '));
+      } catch {
+        return {};
+      }
+    }
+    return Object.fromEntries(
+      Object.entries(position.value)
+        .filter(([, piece]) => piece.startsWith(color))
+        .map(([square]) => [square, previewMoves(square, board)])
+        .filter(([, moves]) => moves.length)
+    );
   }
 
   function canMoveFrom(square: string): boolean {
@@ -227,6 +252,7 @@ export function useBoardHistory(startFen: string = DEFAULT_POSITION) {
     laterMoves,
     legalTargets,
     previewMoves,
+    reachFor,
     canMoveFrom,
     check,
     move,

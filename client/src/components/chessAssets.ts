@@ -8,8 +8,11 @@ export type PieceCode = `${PieceColor}_${PieceRole}`;
 // Square name ("e4") -> piece on that square.
 export type Position = Record<string, PieceCode>;
 
-/** What drew an arrow; sets its default style. `preview` = where the selected piece can go. */
-export type ArrowKind = 'test' | 'preview';
+/**
+ * What drew an arrow; sets its default style. `preview` = where the selected piece can go;
+ * `all-w` / `all-b` = the "all moves" experiment: every white / black piece's moves.
+ */
+export type ArrowKind = 'test' | 'preview' | 'all-w' | 'all-b';
 
 // Overlay arrow between two squares; color is any canvas color (default depends on kind).
 export interface Arrow {
