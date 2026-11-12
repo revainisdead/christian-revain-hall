@@ -173,9 +173,9 @@ These follow from [FAIR_PLAY.md](../FAIR_PLAY.md) and the hard rule in CLAUDE.md
 A separate Django app, `training`, holds the server side. On the client, the matching Pinia groups are `campaign`, `progress` and `settings` (see `client/src/stores/CONTEXT.md`).
 
 **Opponents**
-- **A ladder of bots of increasing difficulty.** For example, a UCI engine such as Stockfish run server-side with limited skill and depth, or a custom engine.
+- **A ladder of bots of increasing difficulty,** running in the player's browser (a Web Worker), so they cost the server nothing. All bots are our own search and evaluation on chess.js (no Stockfish); harder bots search deeper and evaluate more. The same evaluation can later drive training insights, such as whether a move was better or worse. The server saves games and checks each move is legal. See [prod-risks-plan.md](prod-risks-plan.md) section 3, including the decision: BlunderProof is training only, so chess CPU work runs in the browser wherever it can, and legal protection comes from `FAIR_PLAY.md` and the license.
 - **Bots with personality:** a name, a portrait, a playing style (aggressive, solid, tricky) and a few lines of flavor text. A "boss" bot ends each tier.
-- The engine only **plays** the bot's moves. Its evaluations and suggestions are never shown to the player (see [Fair play](#fair-play-constraints)).
+- The bot only **plays** its moves. Its evaluations aren't shown to the player: BlunderProof teaches seeing the position, not reading an engine score (see the [training goal](#training-goal)).
 
 **Runs and progression**
 - **Roguelike runs:** go deep through the ladder. Losing ends the run, and what you earned carries over.

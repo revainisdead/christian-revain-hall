@@ -17,6 +17,7 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
 - `plans/chess-data-plan.md`: storage design (Game → Move with FEN per move, no per-piece rows) and the games API.
 - `plans/backend-tech-plan.md`: ordered backend work with code requirements (framework upgrade, legacy app removal, auth endpoints, games/moves API, tests, JWT, Google).
 - `plans/attack-map-plan.md`: move preview (arrows per direction, capture marks), attacker bubbles, and the "Pieces under attack" list (all done), plus what's next.
+- `plans/prod-risks-plan.md`: production checklist: bots and scraping, keeping AWS costs low until traffic, bot-engine CPU, common Terraform failures, by deploy stage.
 - `plans/deploy-plan.md`: run on the existing EC2 box with the docker-scripts, then HTTPS, backups, push-to-deploy, CI-built images, and Terraform (import first, replace later).
 
 ## Layout
