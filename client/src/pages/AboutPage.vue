@@ -17,7 +17,16 @@
         <ul class="q-mt-sm">
           <li>Chess rules in the browser: chess.js (BSD-2-Clause license).</li>
           <li>Chess rules on the server: python-chess (GPL-3.0 license).</li>
-          <li>Piece and board art: JohnPablok's Cburnett chess set.</li>
+          <li>
+            Piece and board art: "Cburnett Chess set" by JohnPablok, based on the Cburnett pieces by
+            Colin M.L. Burnett, from OpenGameArt.org. Used unmodified under
+            <a
+              href="https://creativecommons.org/licenses/by-sa/3.0/"
+              target="_blank"
+              rel="noopener"
+              data-testid="art-license-link"
+            >CC BY-SA 3.0</a>.
+          </li>
         </ul>
       </q-card-section>
 

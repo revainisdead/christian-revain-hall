@@ -1,0 +1,11 @@
+JohnPablok Cburnett Chess set (v2)
+
+Chess piece and board square art by JohnPablok, based on the Cburnett chess pieces
+by Colin M.L. Burnett. Published on OpenGameArt.org.
+
+License: Creative Commons Attribution-ShareAlike 3.0 Unported (CC BY-SA 3.0)
+https://creativecommons.org/licenses/by-sa/3.0/
+
+BlunderProof uses these files unmodified. The CC BY-SA 3.0 license applies to this art only,
+not to the rest of BlunderProof. Any modified version of the art must be shared under the same
+license, with this attribution kept.
