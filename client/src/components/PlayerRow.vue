@@ -1,54 +1,58 @@
 <template>
+  <!-- A boxed bar attached to the board: the header (Black, top) or footer (White, bottom).
+       The bar of the side to move lights up in that side's color and shows "to move" on the right. -->
   <div
-    class="player-row"
-    :class="[color === 'w' ? 'white' : 'black', { active }]"
+    class="player-bar"
+    :class="[color === 'w' ? 'white' : 'black', edge, { active }]"
     :data-testid="`player-${color}`"
   >
-    <span class="turn-disc" />
-    <span>{{ color === 'w' ? 'White' : 'Black' }}</span>
+    <span class="name">{{ color === 'w' ? 'White Player' : 'Black Player' }}</span>
     <span v-if="active" class="turn-label">to move</span>
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{ color: 'w' | 'b'; active: boolean }>();
+defineProps<{ color: 'w' | 'b'; active: boolean; edge: 'top' | 'bottom' }>();
 </script>
 
 <style scoped>
-.player-row {
+.player-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  box-sizing: border-box;
+  width: 404px; /* the board plus its 2px border */
   height: 36px;
-  padding: 0 4px;
-  font-weight: 500;
-  color: #fff;
-  opacity: 0.5;
-  transition: opacity 0.25s;
-}
-.player-row.active {
-  opacity: 1;
-}
-.turn-disc {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
+  padding: 0 12px;
   border: 2px solid #3a2a20;
+  background: rgba(0, 0, 0, 0.22);
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  transition: background 0.25s, color 0.25s, box-shadow 0.25s;
 }
-.white .turn-disc {
-  background: #fff;
+.player-bar.top {
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
 }
-.black .turn-disc {
-  background: #222;
-}
-.white.active .turn-disc {
-  box-shadow: 0 0 8px 3px rgba(255, 255, 255, 0.95);
-}
-.black.active .turn-disc {
-  box-shadow: 0 0 8px 3px rgba(0, 0, 0, 0.9);
+.player-bar.bottom {
+  border-top: 0;
+  border-radius: 0 0 6px 6px;
 }
 .turn-label {
   font-size: 0.85em;
-  opacity: 0.85;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+/* The side to move: the bar takes that side's color and glows outward. */
+.player-bar.white.active {
+  background: #fff;
+  color: #222;
+  box-shadow: 0 6px 18px rgba(255, 255, 255, 0.55);
+}
+.player-bar.black.active {
+  background: #1d1d1d;
+  color: #fff;
+  box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.55);
 }
 </style>

@@ -1,40 +1,33 @@
 <template>
-  <q-card bordered data-testid="bubble-controls">
-    <q-card-section class="row items-center justify-between q-pb-none">
-      <div class="text-subtitle1">Attacker bubbles</div>
-      <div class="legend text-caption">
-        <span class="dot mine" /> yours <span class="dot theirs" /> theirs
-      </div>
-    </q-card-section>
-    <q-card-section class="row q-col-gutter-sm">
-      <div class="col-6">
-        <q-select
-          :model-value="mode"
-          :options="MODES"
-          emit-value
-          map-options
-          dense
-          outlined
-          label="Show on"
-          data-testid="bubble-mode"
-          @update:model-value="emit('update:mode', $event)"
-        />
-      </div>
-      <div class="col-6">
-        <q-select
-          :model-value="viewAs"
-          :options="VIEWS"
-          emit-value
-          map-options
-          dense
-          outlined
-          label="You are"
-          data-testid="bubble-view-as"
-          @update:model-value="emit('update:viewAs', $event)"
-        />
-      </div>
-    </q-card-section>
-  </q-card>
+  <!-- Two dropdowns in a slim row above the board (no card or header). -->
+  <div class="bubble-controls row no-wrap" data-testid="bubble-controls">
+    <q-select
+      class="col"
+      :model-value="mode"
+      :options="MODES"
+      emit-value
+      map-options
+      dense
+      filled
+      bg-color="white"
+      label="Attacker bubbles"
+      data-testid="bubble-mode"
+      @update:model-value="emit('update:mode', $event)"
+    />
+    <q-select
+      class="col"
+      :model-value="viewAs"
+      :options="VIEWS"
+      emit-value
+      map-options
+      dense
+      filled
+      bg-color="white"
+      label="You are"
+      data-testid="bubble-view-as"
+      @update:model-value="emit('update:viewAs', $event)"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -60,22 +53,11 @@ const VIEWS: { label: string; value: ViewAs }[] = [
 </script>
 
 <style scoped>
-.legend {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.bubble-controls {
+  width: 404px; /* lines up with the board and the player bars */
+  margin-bottom: 10px;
 }
-.dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-left: 6px;
-}
-.dot.mine {
-  background: #2e7d32;
-}
-.dot.theirs {
-  background: #c62828;
+.bubble-controls > .q-select + .q-select {
+  margin-left: 8px;
 }
 </style>

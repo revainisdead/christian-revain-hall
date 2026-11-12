@@ -58,19 +58,20 @@
       />
     </q-card-section>
 
-    <!-- One line per move ("1. e4 e5"), about 5 lines tall; scrolls to keep the current move in view. -->
+    <!-- One column, one half-move per line ("1. e4", "1... e5"), about 5 lines tall; scrolls to
+         keep the current move in view. -->
     <q-card-section class="q-pt-none">
       <div ref="list" class="move-list" data-testid="move-list">
         <span v-if="!rows.length" class="text-grey-7">Click a piece, then a square.</span>
-        <div v-for="row in rows" :key="row.number" class="move-row" data-testid="move-row">
-          <span class="num text-grey-7">{{ row.number }}.</span>{{ ' ' }}
-          <span
-            v-for="half in row.plies"
-            :key="half.ply"
-            class="move"
-            :class="{ current: half.ply === game.ply.value }"
-            @click="game.goTo(half.ply)"
-          >{{ half.san }}{{ ' ' }}</span>
+        <div
+          v-for="row in rows"
+          :key="row.ply"
+          class="move-row"
+          :class="{ current: row.ply === game.ply.value }"
+          data-testid="move-row"
+          @click="game.goTo(row.ply)"
+        >
+          <span class="num text-grey-7">{{ row.label }}</span>{{ ' ' }}<span class="move">{{ row.san }}</span>
         </div>
       </div>
     </q-card-section>
@@ -83,17 +84,12 @@ import { BoardHistory } from 'components/useBoardHistory';
 
 const props = defineProps<{ game: BoardHistory }>();
 
-/** Moves paired per line: { number, plies: [White's, Black's?] }, each with its ply for goTo. */
+/** One line per half-move: White's as "1.", Black's as "1...", each with its ply for goTo. */
 const rows = computed(() =>
-  props.game.moves.value
-    .map((san, i) => ({ san, ply: i + 1 }))
-    .reduce<{ number: number; plies: { san: string; ply: number }[] }[]>(
-      (acc, half, i) =>
-        i % 2 === 0
-          ? [...acc, { number: i / 2 + 1, plies: [half] }]
-          : [...acc.slice(0, -1), { ...acc[acc.length - 1], plies: [...acc[acc.length - 1].plies, half] }],
-      []
-    )
+  props.game.moves.value.map((san, i) => {
+    const number = Math.floor(i / 2) + 1;
+    return { san, ply: i + 1, label: i % 2 === 0 ? `${number}.` : `${number}...` };
+  })
 );
 
 // Keep the current move's line in view: new moves scroll down, stepping back scrolls up.
@@ -103,7 +99,7 @@ watch(
   async () => {
     await nextTick();
     const box = list.value;
-    const line = box?.querySelector('.move.current')?.closest('.move-row') as HTMLElement | null;
+    const line = box?.querySelector<HTMLElement>('.move-row.current') ?? null;
     if (!box) {
       return;
     }
@@ -148,17 +144,17 @@ const resultText = computed(() => {
 }
 .move-row {
   display: grid;
-  grid-template-columns: 3em 1fr 1fr;
+  grid-template-columns: 3.5em 1fr;
   align-items: center;
   height: 26px;
-}
-.move-list .move {
-  justify-self: start; /* highlight hugs the move, not the whole column */
-  cursor: pointer;
-  padding: 0 2px;
+  padding: 0 4px;
   border-radius: 3px;
+  cursor: pointer;
 }
-.move-list .move.current {
+.move-row:hover {
+  background: #f2f2f2;
+}
+.move-row.current {
   background: #ffe082;
 }
 .game-result {

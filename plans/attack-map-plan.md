@@ -28,8 +28,8 @@ Built on the main board instead of the separate mini board first planned, so the
 **Name:** the small green and red number circles in a square's bottom corners are **attacker bubbles**. Use that name in code, UI and docs.
 
 - Each occupied square (by default; or every square) shows a **green** bubble at the bottom left (how many of **your** pieces attack it) and a **red** bubble at the bottom right (how many of the **opponent's** do). Zero is hidden. The corner position carries the meaning too, so color isn't the only signal.
-- An **Attacker bubbles** card (right column) holds two dropdowns:
-  - **Show on:** Pieces only (default: occupied squares only), All squares, Off. Off clears the board for clean viewing.
+- Two dropdowns sit in a slim row above the board, over the "Black Player" bar (no card or header):
+  - **Attacker bubbles:** Pieces only (default: occupied squares only), All squares, Off. Off clears the board for clean viewing.
   - **You are:** Side to move (default), White, Black. Until saved games record your color (UI plan step 3), "you" is the side to move, so green and red swap each move. Picking a color pins them. Step 3 can default this to `user_color`.
 - The counts follow history navigation, since they're computed from the shown position.
 

@@ -2,9 +2,11 @@
   <q-page class="index-page row items-start justify-center q-pa-lg q-gutter-lg">
     <ThreatList :threats="threats" :me="me" @preview="openBattle" />
 
-    <!-- Player rows above/below the board (Black on top, White at the bottom); the side to move glows. -->
+    <!-- Bubble dropdowns, then the board boxed by player bars (Black on top, White at the bottom);
+         the bar of the side to move lights up. -->
     <div class="board-column" :class="turnClass">
-      <PlayerRow color="b" :active="isTurn('b')" />
+      <AttackerBubbleControls v-model:mode="bubbleMode" v-model:view-as="viewAs" />
+      <PlayerRow color="b" edge="top" :active="isTurn('b')" />
 
       <div class="board-container" data-testid="board">
         <ChessBoard
@@ -20,12 +22,11 @@
         <ChessOverlay :arrows="overlayArrows" />
       </div>
 
-      <PlayerRow color="w" :active="isTurn('w')" />
+      <PlayerRow color="w" edge="bottom" :active="isTurn('w')" />
     </div>
 
     <div class="column q-gutter-y-md side-panels">
       <MoveControls :game="game" />
-      <AttackerBubbleControls v-model:mode="bubbleMode" v-model:view-as="viewAs" />
       <ArrowControls
         v-model:arrows="arrows"
         v-model:all-moves="allMoves"
@@ -184,13 +185,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
   box-sizing: content-box;
   border: 2px solid #3a2a20;
   transition: box-shadow 0.25s;
-}
-/* Turn glow on the edge of the side to move, in that side's color (White bottom, Black top for now). */
-.turn-w .board-container {
-  box-shadow: 0 12px 16px -6px rgba(255, 255, 255, 0.95);
-}
-.turn-b .board-container {
-  box-shadow: 0 -12px 16px -6px rgba(0, 0, 0, 0.9);
 }
 .side-panels {
   width: 320px;

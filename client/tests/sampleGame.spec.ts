@@ -18,7 +18,8 @@ test('sample game: replay a full game by clicks, then White mates', async ({ pag
   const moveList = page.getByTestId('move-list');
   await expect(page.getByTestId('side-to-move')).toHaveText('White to move');
   await expect(moveList).toContainText('12. O-O-O');
-  await expect(moveList).toContainText('16. Qb8+ Nxb8');
+  await expect(moveList).toContainText('16. Qb8+');
+  await expect(moveList).toContainText('16... Nxb8');
   await expect(page.locator(`${sq('c1')} img`)).toHaveAttribute('alt', 'w_king');
   await expect(page.getByTestId('game-result')).toHaveCount(0);
 

@@ -50,7 +50,7 @@ test('arrow controls draw and clear arrows', async ({ page }) => {
   await expect(overlay).toHaveAttribute('data-arrow-count', '0');
 });
 
-test('move list: one line per move, about five lines tall, current move kept in view', async ({
+test('move list: one column, about five lines tall, current move kept in view', async ({
   page,
 }) => {
   // The first 8 moves of the sample game (checked with python-chess).
@@ -58,9 +58,11 @@ test('move list: one line per move, about five lines tall, current move kept in 
 
   const list = page.getByTestId('move-list');
   const rows = page.getByTestId('move-row');
-  await expect(rows).toHaveCount(8);
-  await expect(rows.first()).toHaveText('1. e4 e5');
-  await expect(rows.nth(7)).toHaveText('8. Nc3 c6');
+  await expect(rows).toHaveCount(16);
+  await expect(rows.nth(0)).toHaveText('1. e4');
+  await expect(rows.nth(1)).toHaveText('1... e5');
+  await expect(rows.nth(14)).toHaveText('8. Nc3');
+  await expect(rows.nth(15)).toHaveText('8... c6');
 
   const inView = (i: number) =>
     list.evaluate((box, n) => {
@@ -73,10 +75,23 @@ test('move list: one line per move, about five lines tall, current move kept in 
 
   // Capped height: it scrolls, the newest move is visible and the first one isn't.
   expect(await list.evaluate((box) => box.scrollHeight > box.clientHeight)).toBe(true);
-  await expect.poll(() => inView(7)).toBe(true);
+  await expect.poll(() => inView(15)).toBe(true);
   expect(await inView(0)).toBe(false);
 
   // Jumping to the start scrolls back up.
   await page.keyboard.press('Home');
   await expect.poll(() => inView(0)).toBe(true);
+});
+
+test('player bars: "White Player" / "Black Player", "to move" on the side to move', async ({
+  page,
+}) => {
+  const white = page.getByTestId('player-w');
+  const black = page.getByTestId('player-b');
+  await expect(white).toHaveText(/^White Player\s*to move$/);
+  await expect(black).toHaveText('Black Player');
+
+  await play(page, 'e2e4');
+  await expect(white).toHaveText('White Player');
+  await expect(black).toHaveText(/^Black Player\s*to move$/);
 });

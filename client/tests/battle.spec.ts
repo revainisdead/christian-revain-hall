@@ -35,7 +35,8 @@ test('hanging bishop: the tab shows the pawn on f4 and no controls', async ({ pa
 
   // The game tab is untouched.
   await expect(page.locator(`${sq('f4')} img`)).toHaveAttribute('alt', 'w_bishop');
-  await expect(page.getByTestId('move-list')).toContainText('4. Bf4 g5');
+  await expect(page.getByTestId('move-list')).toContainText('4. Bf4');
+  await expect(page.getByTestId('move-list')).toContainText('4... g5');
 });
 
 test('knight for a pawn: b4xc3, b2xc3', async ({ page }) => {

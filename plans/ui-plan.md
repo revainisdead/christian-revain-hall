@@ -25,7 +25,7 @@ Code:
 - Click a piece of the side to move, then a square, to move it. Turns alternate. The last move's squares are tinted.
 - Back, forward, start and end, plus the keyboard shortcuts, and a clickable move list.
 - Arrow test card: draw by squares, a sample set (three colors), the last move as an arrow, undo, and clear.
-- Turn indicator: player rows above and below the board, and a glow on the mover's edge (white for White, black for Black).
+- Turn indicator: boxed player bars attached to the board, "Black Player" on top and "White Player" below. The side to move's bar lights up in its color, glows, and shows "to move" on the right.
 
 ### Step 2: Rules with chess.js (done)
 
