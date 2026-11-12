@@ -25,8 +25,6 @@ defineProps<{ color: 'w' | 'b'; active: boolean; edge: 'top' | 'bottom' }>();
   height: 36px;
   padding: 0 12px;
   border: 2px solid #3a2a20;
-  background: rgba(0, 0, 0, 0.22);
-  color: rgba(255, 255, 255, 0.7);
   font-weight: 500;
   transition: background 0.25s, color 0.25s, box-shadow 0.25s;
 }
@@ -44,15 +42,22 @@ defineProps<{ color: 'w' | 'b'; active: boolean; edge: 'top' | 'bottom' }>();
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-/* The side to move: the bar takes that side's color and glows outward. */
-.player-bar.white.active {
-  background: #fff;
-  color: #222;
-  box-shadow: 0 6px 18px rgba(255, 255, 255, 0.55);
+/* Black's bar is black, White's is white; the side waiting is dimmed. */
+.player-bar.black {
+  background: #000;
+  color: rgba(255, 255, 255, 0.55);
 }
+.player-bar.white {
+  background: #fff;
+  color: rgba(0, 0, 0, 0.45);
+}
+/* The side to move: full-strength text and a gold glow. */
 .player-bar.black.active {
-  background: #1d1d1d;
   color: #fff;
-  box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 -4px 16px rgba(200, 161, 101, 0.9);
+}
+.player-bar.white.active {
+  color: #111;
+  box-shadow: 0 4px 16px rgba(200, 161, 101, 0.9);
 }
 </style>

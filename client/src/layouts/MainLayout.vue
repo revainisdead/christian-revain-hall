@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
+    <q-header elevated class="bp-header">
       <q-toolbar>
         <q-btn
           flat
@@ -75,6 +75,9 @@ const toggleLeftDrawer = () => {
 </script>
 
 <style scoped>
+.bp-header {
+  background: linear-gradient(90deg, var(--bp-brown-dark) 0%, var(--bp-brown) 100%);
+}
 .drawer-footer {
   position: absolute;
   bottom: 8px;

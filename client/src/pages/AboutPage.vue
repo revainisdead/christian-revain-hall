@@ -45,7 +45,7 @@ import FairPlayPolicy from 'components/FairPlayPolicy.vue';
 
 <style scoped>
 .about-page {
-  background: linear-gradient(135deg, #0f9b8e 0%, #1565c0 100%);
+  background: var(--bp-page-bg);
 }
 .about-card {
   max-width: 760px;

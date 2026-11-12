@@ -81,7 +81,7 @@ async function logout() {
 
 <style scoped>
 .accept-page {
-  background: linear-gradient(135deg, #0f9b8e 0%, #1565c0 100%);
+  background: var(--bp-page-bg);
 }
 .accept-card {
   width: min(720px, 100%);

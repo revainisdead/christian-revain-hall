@@ -1,1 +1,10 @@
 // app global css in SCSS form
+
+// Shared look: the page background and the browns used across the app.
+:root {
+  --bp-page-bg: linear-gradient(180deg, #d4d4d4 0%, #ffffff 100%);
+  --bp-brown-dark: #3e2723;
+  --bp-brown: #6d4c41;
+  --bp-tan: #cbb393; // dropdowns
+  --bp-tan-light: #efe4d3; // Pieces under attack
+}

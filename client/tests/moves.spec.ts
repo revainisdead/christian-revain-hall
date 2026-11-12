@@ -37,7 +37,8 @@ test('only the side to move can be selected', async ({ page }) => {
   await expect(page.locator(sq('e7'))).not.toHaveClass(/selected/);
 });
 
-test('arrow controls draw and clear arrows', async ({ page }) => {
+// The Arrows (testing) card is hidden for now (commented out in IndexPage.vue); unskip with it.
+test.skip('arrow controls draw and clear arrows', async ({ page }) => {
   const overlay = page.locator('canvas.chess-overlay');
   await expect(overlay).toHaveAttribute('data-arrow-count', '0');
 

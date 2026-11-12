@@ -93,6 +93,7 @@ const rows = computed(() =>
 );
 
 // Keep the current move's line in view: new moves scroll down, stepping back scrolls up.
+// Not on first render: a game loaded with the page (e.g. the sample game) opens at the top.
 const list = ref<HTMLElement | null>(null);
 watch(
   () => [props.game.ply.value, props.game.moves.value.length],
@@ -114,8 +115,7 @@ watch(
     } else if (bottom > box.scrollTop + box.clientHeight) {
       box.scrollTop = bottom - box.clientHeight;
     }
-  },
-  { immediate: true }
+  }
 );
 
 const whiteToMove = computed(

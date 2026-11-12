@@ -5,7 +5,10 @@
     <!-- Bubble dropdowns, then the board boxed by player bars (Black on top, White at the bottom);
          the bar of the side to move lights up. -->
     <div class="board-column" :class="turnClass">
-      <AttackerBubbleControls v-model:mode="bubbleMode" v-model:view-as="viewAs" />
+      <div class="board-tools row no-wrap items-center">
+        <AttackerBubbleControls v-model:mode="bubbleMode" v-model:view-as="viewAs" />
+        <AllMovesButton v-model="allMoves" class="q-ml-sm" />
+      </div>
       <PlayerRow color="b" edge="top" :active="isTurn('b')" />
 
       <div class="board-container" data-testid="board">
@@ -27,11 +30,9 @@
 
     <div class="column q-gutter-y-md side-panels">
       <MoveControls :game="game" />
-      <ArrowControls
-        v-model:arrows="arrows"
-        v-model:all-moves="allMoves"
-        :last-move="game.lastMove.value"
-      />
+      <!-- Arrows (testing) card: hidden for now; the component is kept.
+      <ArrowControls v-model:arrows="arrows" :last-move="game.lastMove.value" />
+      -->
     </div>
 
     <PromotionDialog ref="promotionDialog" :color="game.sideToMove.value" />
@@ -41,7 +42,8 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import ArrowControls from 'components/ArrowControls.vue';
+// import ArrowControls from 'components/ArrowControls.vue'; // Arrows (testing) card, hidden for now
+import AllMovesButton from 'components/AllMovesButton.vue';
 import AttackerBubbleControls from 'components/AttackerBubbleControls.vue';
 import ChessBoard from 'components/ChessBoard.vue';
 import ChessOverlay from 'components/ChessOverlay.vue';
@@ -176,7 +178,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 
 <style>
 .index-page {
-  background: linear-gradient(135deg, #0f9b8e 0%, #1565c0 100%);
+  background: var(--bp-page-bg);
 }
 .board-container {
   position: relative;
@@ -185,6 +187,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
   box-sizing: content-box;
   border: 2px solid #3a2a20;
   transition: box-shadow 0.25s;
+}
+.board-tools {
+  width: 404px; /* lines up with the board and the player bars */
+  margin-bottom: 10px;
 }
 .side-panels {
   width: 320px;

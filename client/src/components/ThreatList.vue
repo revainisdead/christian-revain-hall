@@ -77,6 +77,10 @@ const sideName = computed(() => (props.me === 'w' ? 'White' : 'Black'));
 <style scoped>
 .threat-list {
   width: 290px;
+  background: var(--bp-tan-light);
+}
+.threat-list .q-markup-table {
+  background: transparent;
 }
 .threat-piece {
   width: 22px;

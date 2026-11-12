@@ -4,7 +4,7 @@
     <div v-if="position" class="battle-board" data-testid="battle-board">
       <ChessBoard :position="position" :selected="square" />
     </div>
-    <div v-else class="text-white" data-testid="battle-missing">No board to show.</div>
+    <div v-else class="text-grey-8" data-testid="battle-missing">No board to show.</div>
   </q-page>
 </template>
 
@@ -24,7 +24,7 @@ const square = computed(() => {
 
 <style scoped>
 .battle-page {
-  background: linear-gradient(135deg, #0f9b8e 0%, #1565c0 100%);
+  background: var(--bp-page-bg);
 }
 .battle-board {
   position: relative;

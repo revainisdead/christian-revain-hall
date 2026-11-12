@@ -9,7 +9,6 @@
       map-options
       dense
       filled
-      bg-color="white"
       label="Attacker bubbles"
       data-testid="bubble-mode"
       @update:model-value="emit('update:mode', $event)"
@@ -22,7 +21,6 @@
       map-options
       dense
       filled
-      bg-color="white"
       label="You are"
       data-testid="bubble-view-as"
       @update:model-value="emit('update:viewAs', $event)"
@@ -54,10 +52,13 @@ const VIEWS: { label: string; value: ViewAs }[] = [
 
 <style scoped>
 .bubble-controls {
-  width: 404px; /* lines up with the board and the player bars */
-  margin-bottom: 10px;
+  flex: 1;
 }
 .bubble-controls > .q-select + .q-select {
   margin-left: 8px;
+}
+/* Tan dropdowns, matching the board's wood. */
+.bubble-controls :deep(.q-field__control) {
+  background: var(--bp-tan);
 }
 </style>
