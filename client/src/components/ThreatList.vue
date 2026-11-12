@@ -1,7 +1,15 @@
 <template>
-  <q-card bordered class="threat-list" data-testid="threat-list">
+  <q-card bordered class="threat-list column no-wrap" data-testid="threat-list">
     <q-card-section class="q-pb-none">
-      <div class="text-subtitle1">Pieces under attack</div>
+      <div class="text-subtitle1 row items-center">
+        Pieces under attack
+        <q-icon name="info_outline" size="16px" class="q-ml-xs text-grey-7" data-testid="threat-info">
+          <q-tooltip max-width="260px">
+            Battle plays out the captures cheapest piece first. Pawn 1, knight and bishop 3,
+            rook 5, queen 9. Pins and x-rays aren't counted yet.
+          </q-tooltip>
+        </q-icon>
+      </div>
       <div class="text-caption text-grey-7">{{ sideName }}, most urgent first</div>
     </q-card-section>
 
@@ -9,7 +17,7 @@
       Nothing of yours is attacked.
     </q-card-section>
 
-    <q-markup-table v-else flat dense class="q-mt-sm">
+    <q-markup-table v-else flat dense class="q-mt-sm col threat-table">
       <thead>
         <tr>
           <th class="text-left">Piece</th>
@@ -56,11 +64,6 @@
         </tr>
       </tbody>
     </q-markup-table>
-
-    <q-card-section class="text-caption text-grey-7 q-pt-sm">
-      Battle plays out the captures cheapest piece first. Pawn 1, knight and bishop 3, rook 5,
-      queen 9. Pins and x-rays aren't counted yet.
-    </q-card-section>
   </q-card>
 </template>
 
@@ -76,8 +79,11 @@ const sideName = computed(() => (props.me === 'w' ? 'White' : 'Black'));
 
 <style scoped>
 .threat-list {
-  width: 290px;
   background: var(--bp-tan-light);
+}
+.threat-table {
+  min-height: 0;
+  overflow-y: auto;
 }
 .threat-list .q-markup-table {
   background: transparent;

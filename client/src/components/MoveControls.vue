@@ -1,5 +1,5 @@
 <template>
-  <q-card bordered data-testid="chess-controls">
+  <q-card bordered class="moves-card column no-wrap" data-testid="chess-controls">
     <q-card-section class="row items-center justify-between q-pb-none">
       <div class="text-subtitle1">Moves</div>
       <q-badge
@@ -21,7 +21,7 @@
       </div>
     </q-card-section>
 
-    <q-card-section class="row justify-center q-gutter-x-xs">
+    <q-card-section class="row justify-center q-gutter-x-xs q-py-xs">
       <q-btn
         dense
         flat
@@ -60,7 +60,7 @@
 
     <!-- One column, one half-move per line ("1. e4", "1... e5"), about 5 lines tall; scrolls to
          keep the current move in view. -->
-    <q-card-section class="q-pt-none">
+    <q-card-section class="q-pt-none col list-section">
       <div ref="list" class="move-list" data-testid="move-list">
         <span v-if="!rows.length" class="text-grey-7">Click a piece, then a square.</span>
         <div
@@ -136,9 +136,15 @@ const resultText = computed(() => {
 </script>
 
 <style scoped>
+.list-section {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
 .move-list {
   position: relative; /* offsetTop of each line is measured from here */
-  max-height: calc(5 * 26px); /* about 5 moves in view */
+  flex: 1;
+  min-height: 0; /* the card's half of the column sets the height: about 5 moves */
   overflow-y: auto;
   font-family: monospace;
 }

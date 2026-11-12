@@ -1,39 +1,46 @@
 <template>
   <q-page class="index-page row items-start justify-center q-pa-lg q-gutter-lg">
-    <ThreatList :threats="threats" :me="me" @preview="openBattle" />
-
-    <!-- Bubble dropdowns, then the board boxed by player bars (Black on top, White at the bottom);
-         the bar of the side to move lights up. -->
-    <div class="board-column" :class="turnClass">
-      <div class="board-tools row no-wrap items-center">
-        <AttackerBubbleControls v-model:mode="bubbleMode" v-model:view-as="viewAs" />
-        <AllMovesButton v-model="allMoves" class="q-ml-sm" />
-      </div>
-      <PlayerRow color="b" edge="top" :active="isTurn('b')" />
-
-      <div class="board-container" data-testid="board">
-        <ChessBoard
-          :position="game.position.value"
-          :selected="selected"
-          :highlights="lastMoveSquares"
-          :check="game.checkSquare.value"
-          :targets="preview.map((m) => m.to)"
-          :victims="preview.flatMap((m) => (m.victim ? [m.victim] : []))"
-          :bubbles="bubbles"
-          @square-click="onSquareClick"
-        />
-        <ChessOverlay :arrows="overlayArrows" />
-      </div>
-
-      <PlayerRow color="w" edge="bottom" :active="isTurn('w')" />
-    </div>
-
-    <div class="column q-gutter-y-md side-panels">
+    <!-- Left: Pieces under attack over the move history, equal halves of the board's height. -->
+    <div class="left-column">
+      <ThreatList :threats="threats" :me="me" @preview="openBattle" />
       <MoveControls :game="game" />
-      <!-- Arrows (testing) card: hidden for now; the component is kept.
-      <ArrowControls v-model:arrows="arrows" :last-move="game.lastMove.value" />
-      -->
     </div>
+
+    <!-- The board with its controls panel close on the right (one gutter item, so the gap stays small). -->
+    <div class="board-area row no-wrap items-start">
+      <!-- Bubble dropdowns, then the board boxed by player bars (Black on top, White at the bottom);
+           the bar of the side to move lights up. -->
+      <div class="board-column" :class="turnClass">
+        <div class="board-tools row no-wrap items-center">
+          <AttackerBubbleControls v-model:mode="bubbleMode" v-model:view-as="viewAs" />
+        </div>
+        <PlayerRow color="b" edge="top" :active="isTurn('b')" />
+
+        <div class="board-container" data-testid="board">
+          <ChessBoard
+            :position="game.position.value"
+            :selected="selected"
+            :highlights="lastMoveSquares"
+            :check="game.checkSquare.value"
+            :targets="preview.map((m) => m.to)"
+            :victims="preview.flatMap((m) => (m.victim ? [m.victim] : []))"
+            :bubbles="bubbles"
+            @square-click="onSquareClick"
+          />
+          <ChessOverlay :arrows="overlayArrows" />
+        </div>
+
+        <PlayerRow color="w" edge="bottom" :active="isTurn('w')" />
+      </div>
+
+      <ControlsPanel class="controls-panel">
+        <AllMovesButton v-model="allMoves" />
+      </ControlsPanel>
+    </div>
+
+    <!-- Arrows (testing) card: hidden for now; the component is kept.
+    <ArrowControls v-model:arrows="arrows" :last-move="game.lastMove.value" />
+    -->
 
     <PromotionDialog ref="promotionDialog" :color="game.sideToMove.value" />
     <TruncateDialog ref="truncateDialog" :later-moves="game.laterMoves.value" />
@@ -44,6 +51,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 // import ArrowControls from 'components/ArrowControls.vue'; // Arrows (testing) card, hidden for now
 import AllMovesButton from 'components/AllMovesButton.vue';
+import ControlsPanel from 'components/ControlsPanel.vue';
 import AttackerBubbleControls from 'components/AttackerBubbleControls.vue';
 import ChessBoard from 'components/ChessBoard.vue';
 import ChessOverlay from 'components/ChessOverlay.vue';
@@ -190,9 +198,24 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 }
 .board-tools {
   width: 404px; /* lines up with the board and the player bars */
+  height: 40px;
   margin-bottom: 10px;
 }
-.side-panels {
-  width: 320px;
+/* Left column: as tall as the board column (tools 50 + bars 2 x 36 + board 404), split evenly. */
+.left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 290px;
+  height: 526px;
+}
+.left-column > .q-card {
+  flex: 1 1 0;
+  min-height: 0;
+}
+/* Close to the board, not attached; its top lines up with the Black Player bar. */
+.controls-panel {
+  margin-left: 8px;
+  margin-top: 50px;
 }
 </style>

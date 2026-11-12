@@ -96,3 +96,19 @@ test('player bars: "White Player" / "Black Player", "to move" on the side to mov
   await expect(white).toHaveText('White Player');
   await expect(black).toHaveText(/^Black Player\s*to move$/);
 });
+
+test('layout: equal left cards squared with the board, All moves in the controls panel', async ({
+  page,
+}) => {
+  const box = async (id: string) => (await page.getByTestId(id).boundingBox())!;
+  const threats = await box('threat-list');
+  const moves = await box('chess-controls');
+  const white = await box('player-w');
+
+  expect(Math.abs(threats.height - moves.height)).toBeLessThan(2);
+  expect(Math.abs(threats.width - moves.width)).toBeLessThan(2);
+  expect(Math.abs(moves.y + moves.height - (white.y + white.height))).toBeLessThan(2); // bottoms align
+
+  const panel = page.getByTestId('controls-panel');
+  await expect(panel.getByTestId('all-moves')).toHaveAttribute('aria-label', 'All moves');
+});
