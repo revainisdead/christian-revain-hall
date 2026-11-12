@@ -32,7 +32,7 @@ You alone are responsible for how you use BlunderProof and for any consequences 
 
 ## 6. Forks and redistribution
 
-Anyone who copies, forks, modifies, or redistributes BlunderProof must keep this policy, or terms that are at least as restrictive, and must not remove or weaken the restrictions in Section 1.
+BlunderProof's source code is proprietary (see LICENSE). No one may copy, fork, modify, or redistribute it without written permission from the copyright holder. Anyone given that permission must keep this policy, or terms that are at least as restrictive, and must not remove or weaken the restrictions in Section 1.
 
 ## 7. Changes
 

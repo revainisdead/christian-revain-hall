@@ -85,9 +85,10 @@
 
     <h3>6. Forks and redistribution</h3>
     <p>
-      Anyone who copies, forks, modifies, or redistributes BlunderProof must keep this policy,
-      or terms that are at least as restrictive, and must not remove or weaken the restrictions
-      in Section 1.
+      BlunderProof's source code is proprietary. No one may copy, fork, modify, or redistribute
+      it without written permission from the copyright holder. Anyone given that permission must
+      keep this policy, or terms that are at least as restrictive, and must not remove or weaken
+      the restrictions in Section 1.
     </p>
 
     <h3>7. Changes</h3>

@@ -42,4 +42,8 @@ docker-scripts/migrate      # run migrations (also: make | show)
 
 ## Credits
 
-Chess piece and board artwork: Cburnett chess set by JohnPablok (`client/public/JohnPablok Cburnett Chess set/`).
+Chess piece and board artwork: Cburnett chess set by JohnPablok, based on the Cburnett pieces by Colin M.L. Burnett, CC BY-SA 3.0 (`client/public/JohnPablok Cburnett Chess set/LICENSE.txt`).
+
+## License
+
+Proprietary. All rights reserved. See [LICENSE](LICENSE). Third-party components keep their own licenses (listed there).

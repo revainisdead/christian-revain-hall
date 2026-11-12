@@ -5,6 +5,7 @@
   "productName": "BlunderProof",
   "author": "revainisdead (https://github.com/revainisdead)",
   "private": true,
+  "license": "UNLICENSED",
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue ./",
     "lintfix": "npm run lint --fix",
