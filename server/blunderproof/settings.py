@@ -46,6 +46,10 @@ PASSWORD_LOGIN_ENABLED = os.environ.get("PASSWORD_LOGIN_ENABLED", str(DEBUG)).lo
 # Google Identity Services OAuth client ID (Google Cloud console > Credentials). Empty = Google sign-in off.
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 
+# Version of FAIR_PLAY.md that users must accept. Bump it (a date) when the policy changes in a way
+# everyone has to accept again; users who accepted an older version are asked on their next visit.
+FAIR_PLAY_VERSION = "2026-11-11"
+
 # nginx terminates TLS and sets X-Forwarded-Proto; trust it so Django knows requests are https.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 

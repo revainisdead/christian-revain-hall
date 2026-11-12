@@ -1,5 +1,6 @@
 import pytest
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from model_bakery import baker
 from rest_framework.test import APIClient
 
@@ -10,8 +11,10 @@ User = get_user_model()
 
 
 @pytest.fixture
-def user():
-    return baker.make(User)
+def user(settings):
+    return baker.make(
+        User, fair_play_accepted_at=timezone.now(), fair_play_version=settings.FAIR_PLAY_VERSION
+    )
 
 
 @pytest.fixture
@@ -23,6 +26,14 @@ def client(user):
 
 def test_requires_login():
     assert APIClient().get("/api/games/").status_code == 401
+
+
+def test_requires_fair_play_acceptance():
+    client = APIClient()
+    client.force_authenticate(baker.make(User))
+    resp = client.get("/api/games/")
+    assert resp.status_code == 403
+    assert "fair-play" in resp.data["detail"]
 
 
 def test_other_users_games_are_hidden(client):

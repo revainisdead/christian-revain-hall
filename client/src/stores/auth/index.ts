@@ -6,6 +6,7 @@ export interface User {
   id: number;
   username: string;
   email: string;
+  fair_play_accepted: boolean; // accepted the current fair-play policy version
 }
 
 export interface AuthConfig {
@@ -52,11 +53,28 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = (await api.post<User>('/auth/google/', { credential })).data;
   }
 
+  /** Record that the user read and accepted the fair-play policy. */
+  async function acceptFairPlay() {
+    await ensureCsrf();
+    user.value = (await api.post<User>('/auth/fair-play/accept/')).data;
+  }
+
   async function logout() {
     await ensureCsrf();
     await api.post('/auth/logout/');
     user.value = null;
   }
 
-  return { user, checked, config, isLoggedIn, fetchMe, loadConfig, login, googleLogin, logout };
+  return {
+    user,
+    checked,
+    config,
+    isLoggedIn,
+    fetchMe,
+    loadConfig,
+    login,
+    googleLogin,
+    acceptFairPlay,
+    logout,
+  };
 });

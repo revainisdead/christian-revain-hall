@@ -43,7 +43,18 @@ export default route(function ({ store }) {
     if (to.meta.public) {
       return to.name === 'login' && auth.isLoggedIn ? { name: 'home' } : true;
     }
-    return auth.isLoggedIn ? true : { name: 'login', query: { next: to.fullPath } };
+    if (!auth.isLoggedIn) {
+      return { name: 'login', query: { next: to.fullPath } };
+    }
+    // Everyone accepts the current fair-play policy before using the app.
+    const accepted = auth.user?.fair_play_accepted;
+    if (!accepted && to.name !== 'fair-play') {
+      return { name: 'fair-play', query: { next: to.fullPath } };
+    }
+    if (accepted && to.name === 'fair-play') {
+      return { name: 'home' };
+    }
+    return true;
   });
 
   return Router;

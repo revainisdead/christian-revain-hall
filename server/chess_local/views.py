@@ -1,7 +1,8 @@
-from rest_framework import serializers, status, viewsets
+from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from accounts.permissions import HasAcceptedFairPlay
 from chess_local import services
 from chess_local.models import Game
 from chess_local.serializers import (
@@ -14,6 +15,8 @@ from chess_local.serializers import (
 
 class GameViewSet(viewsets.ModelViewSet):
     """Your local games. Other users' games are invisible (404)."""
+
+    permission_classes = [permissions.IsAuthenticated, HasAcceptedFairPlay]
 
     def get_queryset(self):
         qs = Game.objects.filter(owner=self.request.user)

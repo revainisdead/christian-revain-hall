@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.http import Http404
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
@@ -153,3 +154,14 @@ class LogoutView(APIView):
 class MeView(APIView):
     def get(self, request):
         return Response(MeSerializer(request.user).data)
+
+
+class AcceptFairPlayView(APIView):
+    """Record that the logged-in user read and accepted the current fair-play policy."""
+
+    def post(self, request):
+        user = request.user
+        user.fair_play_accepted_at = timezone.now()
+        user.fair_play_version = settings.FAIR_PLAY_VERSION
+        user.save(update_fields=["fair_play_accepted_at", "fair_play_version"])
+        return Response(MeSerializer(user).data)

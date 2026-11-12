@@ -59,7 +59,12 @@ class TestSessionLogin:
 
         resp = client.post(reverse("auth-login"), {"username": "alice", "password": PASSWORD})
         assert resp.status_code == 200
-        assert resp.data == {"id": user.id, "username": "alice", "email": "alice@example.com"}
+        assert resp.data == {
+            "id": user.id,
+            "username": "alice",
+            "email": "alice@example.com",
+            "fair_play_accepted": False,
+        }
         assert client.get(reverse("auth-me")).status_code == 200
 
         assert client.post(reverse("auth-logout")).status_code == 204

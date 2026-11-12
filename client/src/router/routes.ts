@@ -19,6 +19,12 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
+    // First visit (or a new policy version): read the fair-play policy to the end and accept it.
+    path: '/fair-play',
+    component: () => import('layouts/BlankLayout.vue'),
+    children: [{ path: '', name: 'fair-play', component: () => import('pages/FairPlayAcceptPage.vue') }],
+  },
+  {
     // Bare board in its own tab: draws ?board= (FEN placement) and marks ?square=. It analyzes
     // nothing; the board page works out the battle before opening it.
     path: '/battle',

@@ -2,6 +2,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenBlacklistView, TokenRefreshView
 
 from accounts.views import (
+    AcceptFairPlayView,
     AuthConfigView,
     CsrfView,
     GoogleLoginView,
@@ -21,6 +22,7 @@ urlpatterns = [
     path("login/", LoginView.as_view(), name="auth-login"),
     path("logout/", LogoutView.as_view(), name="auth-logout"),
     path("me/", MeView.as_view(), name="auth-me"),
+    path("fair-play/accept/", AcceptFairPlayView.as_view(), name="auth-fair-play-accept"),
     # JWT
     path("token/", PasswordTokenObtainPairView.as_view(), name="token-obtain"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),

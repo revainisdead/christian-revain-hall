@@ -8,7 +8,9 @@ User = get_user_model()
 class MeSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "email"]
+        fields = ["id", "username", "email", "fair_play_accepted"]
+
+    fair_play_accepted = serializers.BooleanField(source="has_accepted_fair_play", read_only=True)
 
 
 class RegisterSerializer(serializers.ModelSerializer):

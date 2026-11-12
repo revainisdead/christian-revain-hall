@@ -16,7 +16,7 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
 - `plans/ui-plan.md`: client steps in order (first move and controls, chess.js rules, saving via the API, orientation, the arrow system, attacker counts).
 - `plans/chess-data-plan.md`: storage design (Game → Move with FEN per move, no per-piece rows) and the games API.
 - `plans/backend-tech-plan.md`: ordered backend work with code requirements (framework upgrade, legacy app removal, auth endpoints, games/moves API, tests, JWT, Google).
-- `plans/attack-map-plan.md`: move preview (arrows per direction, capture marks), the attack-count layer, and the "Pieces under attack" list (all done), plus what's next.
+- `plans/attack-map-plan.md`: move preview (arrows per direction, capture marks), attacker bubbles, and the "Pieces under attack" list (all done), plus what's next.
 - `plans/deploy-plan.md`: run on the existing EC2 box with the docker-scripts, then HTTPS, backups, push-to-deploy, CI-built images, and Terraform (import first, replace later).
 
 ## Layout
@@ -32,8 +32,10 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
   - `src/components/useBoardHistory.ts`: chess.js move history plus a `ply` cursor (`check`, `move`, `back`, `forward`, `goTo`, `status`). Game end matches the server's `board.outcome()` (no claims): threefold and 50-move only mark a draw as claimable.
   - `src/components/ChessPiece.vue` keeps a `fileUrl` / `import.meta.url` reference line on purpose. Don't remove it.
   - `src/components/ChessBoard.vue`: 8x8 CSS grid; takes `position` (`{ e4: 'w_pawn', ... }`, default the starting position), `selected`, `highlights`, `check`, `targets` (preview dots) and `victims` (capture marks), and emits `square-click`
-  - `src/components/attackMap.ts`: attack-count layer and threat list logic (`squareCounts`, `exchangeLoss`, `threatsTo`), fed by `useBoardHistory.attackers`. UI in `AttackControls.vue` (Counts / You are dropdowns) and `ThreatList.vue` (left of the board).
-  - `src/pages/AboutPage.vue` (`/#/about`, public): what BlunderProof is, credits, and the full fair-play policy. Linked low in the drawer. Its policy text mirrors `FAIR_PLAY.md`: update both together.
+  - `src/components/attackMap.ts`: **attacker bubbles** (the green yours / red theirs number circles in square corners; occupied squares only by default) and threat list logic (`attackerBubbles`, `exchangeLoss`, `threatsTo`), fed by `useBoardHistory.attackers`. UI in `AttackerBubbleControls.vue` (Show on / You are dropdowns) and `ThreatList.vue` (left of the board).
+  - `src/pages/AboutPage.vue` (`/#/about`, public): what BlunderProof is, credits, and the full fair-play policy. Linked low in the drawer.
+  - `src/components/FairPlayPolicy.vue`: the policy text, shared by About and `pages/FairPlayAcceptPage.vue` (`/#/fair-play`). It mirrors `FAIR_PLAY.md`: update both together, and bump `FAIR_PLAY_VERSION` (server settings) when everyone must accept the new text.
+  - Fair-play acceptance: the router guard sends logged-in users who haven't accepted the current version to `/#/fair-play`, where the accept button unlocks only after scrolling to the end.
   - `src/pages/BattlePage.vue` (`/#/battle?board=<FEN placement>&square=`): a bare, control-less board in its own tab, opened by the eye button on a "Pieces under attack" row. It only draws the board it's given; the board page works out the battle (`battleOn`). Keep it analysis-free.
   - `src/components/movePreview.ts`: `previewArrows(from, moves)` turns `useBoardHistory.previewMoves(from)` into one arrow per direction (one per knight jump).
   - `src/components/BoardPiece.vue`: one board square (PNG background); `ChessPiece.vue`: one piece (PNG `<img>`)
@@ -45,7 +47,7 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
     - All python-chess rules logic is in `services.py` (`append_move`, `truncate_after`, `board_at`). Views stay thin.
     - `board_at` replays moves from `start_fen` (needed for threefold detection) rather than loading a stored FEN.
     - `manage.py seed_game <user> [--color] [--moves "e2e4 e7e5"]` creates a game.
-  - `accounts/`: `BpUser` custom user model (`AUTH_USER_MODEL`), plus the auth endpoints (session and JWT).
+  - `accounts/`: `BpUser` custom user model (`AUTH_USER_MODEL`), plus the auth endpoints (session and JWT). `BpUser.fair_play_accepted_at` / `fair_play_version` record policy acceptance; `has_accepted_fair_play` compares with `settings.FAIR_PLAY_VERSION`. App data views add `accounts.permissions.HasAcceptedFairPlay` (403 until accepted).
   - `training` (future): the long-run solo game: a roguelike campaign against bots of rising difficulty, with achievements and progression (see the training-tool plan). Don't use that name for anything else.
   - Don't name a Django app `chess`; it would shadow the python-chess package (`import chess`).
 - `docker-scripts/`: wrappers around `docker compose` (`setup`, `start`, `stop`, `migrate`, `manage`, `lint`, `npm`, `console`, ...). Run with `-h` for usage.
@@ -65,7 +67,7 @@ BlunderProof must never be usable for assistance during a live game (Chess.com, 
 - Django: http://127.0.0.1:8008 (container port 8000)
 - API routes (`server/blunderproof/urls.py`):
   - `/api/games/` and `/api/games/{id}/moves/`: POST `{uci, ply}`; DELETE `?after=<ply>`
-  - `/api/auth/{config,csrf,google,register,login,logout,me}/` (session) and `/api/auth/token/{,refresh/,blacklist/}` (JWT)
+  - `/api/auth/{config,csrf,google,register,login,logout,me}/` (session); `me` includes `fair_play_accepted`; `POST /api/auth/fair-play/accept/` records acceptance and `/api/auth/token/{,refresh/,blacklist/}` (JWT)
   - Password endpoints (`login`, `register`, `token`) return 404 unless `PASSWORD_LOGIN_ENABLED`, which defaults to DEBUG.
   - `google` verifies the ID token against `GOOGLE_CLIENT_ID`, finds the user by `BpUser.google_sub` (or links by verified email, or creates one), and starts a session.
   - `/api/accounts/{users,groups,...}/` (staff only), `/admin/`, `/api-auth/`
